@@ -1,4 +1,4 @@
-function [prob_max, g_max] = max_contact_probability(mu, Sigma, s1, s2, isplot)
+function [prob_max, g_max] = max_contact_probability(mu, Sigma, s1, s3, isplot)
 % max_contact_probability Compute maximum probability on the contact space
 % between two convex bodies using closed-form parametric contact space and
 % manifold optimization
@@ -12,10 +12,23 @@ if nargin < 5
     isplot = false;
 end
 
+% Check if s1 and s3 collide at s3 mean pose, if collide, then the maximum
+% probability is at the mean pose
+[flag, ~, pt_cls] = distance_cfc(s1, s3,'constrained');
+
+if flag
+    g_max = mu;
+    g_skew_matrix = logm(g_max);
+    g_skew_vector = [vex(g_skew_matrix(1:3,1:3)); g_skew_matrix(1:3,4)];
+    
+    prob_max = mvnpdf(g_skew_vector', g_skew_vector', Sigma);
+    return
+end
+
 % Create the problem structure.
 so3 = rotationsfactory(3, 1);
 problem.M = so3;
-problem.cost = @(R) cost_function(R, mu, Sigma, s1, s2);
+problem.cost = @(R) cost_function(R, mu, Sigma, s1, s3);
 
 % Use auto-differentiation for gradient computations
 % problem = manoptAD(problem);
@@ -30,8 +43,8 @@ options.tolgradnorm = 1e-3;
 prob_max = 1/( 8*pi^3 * sqrt(det(Sigma)) ) * exp(-1/2 * f_opt);
 
 % Get g_max
-s2.q = rotm2quat(R_opt);
-[~, ~, pt_cls] = distance_cfc(s1, s2);
+s3.q = rotm2quat(R_opt);
+%[~, ~, pt_cls] = distance_cfc(s1, s3,'constrained');
 p_opt = pt_cls.mink;
 
 g_max = [R_opt, p_opt; 0, 0, 0, 1];
@@ -51,15 +64,11 @@ end
 end
 
 %% Objective function
-function f = cost_function(R, mu, Sigma, s1, s2)
+function f = cost_function(R, mu, Sigma, s1, s3)
 % Find closest points between s1 and s2
-s2.q = rotm2quat(R);
-[flag, dist, pt_cls] = distance_cfc(s1, s2);
+s3.q = rotm2quat(R);
+[flag, dist, pt_cls] = distance_cfc(s1, s3,'constrained');
 p = pt_cls.mink;
-
-if flag
-    p = s2.tc;
-end
 
 % Compute cost
 g = [R, p; 0, 0, 0, 1];

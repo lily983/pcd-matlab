@@ -13,9 +13,9 @@ Sigma(4:6,4:6) = 0.5*eye(3);
 %% Solve max contact probability
 mu = [quat2rotm(s2.q), s2.tc; 0, 0, 0, 1];
 
-[prob_max, g_max] = max_contact_probability(mu, Sigma, s1, s2, true);
-pkf_value = pkf_3d(s1, s2, true, false);
-prob_max = pkf_value * prob_max;
+[prob_max, g_max] = max_contact_probability(mu, Sigma, s1, s2, true)
+pkf_value = pkf_3d(s1, s2, true, false)
+prob_max = pkf_value * prob_max
 
 %% Plots
 figure; hold on; axis equal;
