@@ -12,18 +12,18 @@ function prob = max_contact_probability_polyhedron_pure_translation(Sigma, s1, s
 prob = 0;
 
 m1 = s1.GetGradientsCanonical();
-%[flag, dist, pt_cls, condition] = collision_cfc(s1,s2,'constrained');
 mink = MinkSumClosedForm(s1,s2,quat2rotm(s1.q),quat2rotm(s2.q));
 x_mink = mink.GetMinkSumFromGradient(m1)+s1.tc;
 
-mink_points = (sqrtm(Sigma)\x_mink)';
+% Scale and shift all points by 'Sigma \ (x-s2.tc)' because in this case
+% the position error is for s2 not s1
 
+mink_points = (sqrtm(Sigma)\x_mink)';
 shift = sqrtm(Sigma) \ s2.tc;
 
 mink_points(:,1) = mink_points(:,1) - shift(1,1);
 mink_points(:,2) = mink_points(:,2) - shift(2,1);
 mink_points(:,3) = mink_points(:,3) - shift(3,1);
-
 
 X_ = reshape(mink_points(:,1), [20,20]); 
 Y_= reshape(mink_points(:,2),  [20,20]); 
@@ -65,7 +65,6 @@ for i = 1:size(patch_mink.faces,1)
     F_array(1) = dot(F(v1,n_d),n);
     F_array(2) = dot(F(v2,n_d),n);
     F_array(3) = dot(F(v3,n_d),n);
-    max(F_array)*area;
     if isnan(max(F_array)*area)
         warning('find nan')
         v1

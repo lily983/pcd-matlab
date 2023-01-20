@@ -72,14 +72,6 @@ classdef SuperQuadrics < handle
                 end
             end
         end
-
-        %% Setter functions
-        function SetNumVertices(obj, num)
-            obj.N = num;
-            [obj.eta, obj.omega] = meshgrid(...
-                -pi/2:pi/(obj.N(1)-1):pi/2,...
-                -pi-1e-6:2*pi/(obj.N(2)-1):pi+1e-6);
-        end
         
         %% Get implicit function
         function f = GetImplicitFunction(obj, x)

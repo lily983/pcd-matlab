@@ -1,4 +1,4 @@
-function [prob_max, g_max] = max_contact_probability(mu, Sigma, s1, s3, isplot)
+function [prob_max, g_max] = max_contact_probability(mu, Sigma, s1, s2, isplot)
 % max_contact_probability Compute maximum probability on the contact space
 % between two convex bodies using closed-form parametric contact space and
 % manifold optimization
@@ -11,6 +11,10 @@ function [prob_max, g_max] = max_contact_probability(mu, Sigma, s1, s3, isplot)
 if nargin < 5
     isplot = false;
 end
+
+% Function file shares the same pointer to s2 in the main file
+s3 = SuperQuadrics({s2.a, s2.eps, [0, 0]...
+    s2.tc, s2.q, s2.N});
 
 % Check if s1 and s3 collide at s3 mean pose, if collide, then the maximum
 % probability is at the mean pose
