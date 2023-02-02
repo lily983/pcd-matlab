@@ -3,23 +3,21 @@ function prob = exact_contact_probability(mu, Sigma, s1, s2, N)
 %   the exact probability of collision
 %   
 %   Inputs:
-%   mu: Mean pose (center of s2)
+%   mu: Mean pose (center of s2) 4by4 matrix
 %   Sigma: Covariance of the probability
 %   s1, s2: Two convex bodies
 %   N: Sampling points number
 prob = 0;
 
-mu_log_skew = logm(mu);
-mu_log = [vex(mu_log_skew(1:3,1:3)); mu_log_skew(1:3,4)];
+mu_vee = get_vee_vector(mu);
 
-samples = mvnrnd(mu_log', Sigma, N);
+samples = mvnrnd(mu_vee', Sigma, N);
 
 s3 = SuperQuadrics({s2.a, s2.eps, [0, 0]...
     s2.tc, s2.q, s2.N});
 
 for i=1:N
-    samples_skew = [skew(samples(i,1:3)), samples(i,4:6)'; zeros(1,4)];
-    g_rand = expm(samples_skew);
+    g_rand = get_SE3_matrix(samples(i, 1:6)');
     
     s3.tc = g_rand(1:3,4);
    % for two sphere objects, use simplier method to test if they collide
@@ -28,7 +26,7 @@ for i=1:N
            prob = prob+1;      
        end
     else
-       if collision_cfc(s1,s3,'constrained')
+       if collision_cfc(s1,s3)
            prob = prob+1;
        end
    end

@@ -25,7 +25,7 @@ for i=1:N
            prob = prob+1;      
        end
    else
-       if collision_cfc(s1,s3,'constrained')
+       if collision_cfc(s1,s3)
            prob = prob+1;
        end
    end

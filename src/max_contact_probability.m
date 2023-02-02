@@ -1,5 +1,5 @@
-function [prob_max, g_max] = max_contact_probability(mu, Sigma, s1, s2, isplot)
-% max_contact_probability Compute maximum probability on the contact space
+ function [prob_max, g_max] = max_contact_probability(mu, Sigma, s1, s2, isplot)
+% max_contact_probability Compute maximum probability density function value on the contact space
 % between two convex bodies using closed-form parametric contact space and
 % manifold optimization
 %   
@@ -7,6 +7,9 @@ function [prob_max, g_max] = max_contact_probability(mu, Sigma, s1, s2, isplot)
 %   mu: Mean pose (center of s2)
 %   Sigma: Covariance of the probability
 %   s1, s2: Two convex bodies
+%Outputs
+%   prob_max: The maximum pdf value 
+%   g_max: 4by4 matrix of SE(3) group that has prob_max
 
 if nargin < 5
     isplot = false;
@@ -18,14 +21,13 @@ s3 = SuperQuadrics({s2.a, s2.eps, [0, 0]...
 
 % Check if s1 and s3 collide at s3 mean pose, if collide, then the maximum
 % probability is at the mean pose
-[flag, ~, pt_cls] = distance_cfc(s1, s3,'constrained');
+[flag, ~, ~] = collision_cfc(s1, s3);
 
 if flag
     g_max = mu;
-    g_skew_matrix = logm(g_max);
-    g_skew_vector = [vex(g_skew_matrix(1:3,1:3)); g_skew_matrix(1:3,4)];
-    
-    prob_max = mvnpdf(g_skew_vector', g_skew_vector', Sigma);
+    mu_vee = get_vee_vector(mu);
+    g_max_vee = mu_vee;
+    prob_max = mvnpdf(g_max_vee', mu_vee', Sigma);
     return
 end
 
@@ -47,8 +49,8 @@ options.tolgradnorm = 1e-3;
 prob_max = 1/( 8*pi^3 * sqrt(det(Sigma)) ) * exp(-1/2 * f_opt);
 
 % Get g_max
-s3.q = rotm2quat(R_opt);
-%[~, ~, pt_cls] = distance_cfc(s1, s3,'constrained');
+s2.q = rotm2quat(R_opt);
+[~, ~, pt_cls] = distance_cfc(s1, s2);
 p_opt = pt_cls.mink;
 
 g_max = [R_opt, p_opt; 0, 0, 0, 1];
@@ -68,16 +70,19 @@ end
 end
 
 %% Objective function
-function f = cost_function(R, mu, Sigma, s1, s3)
+function f = cost_function(R, mu, Sigma, s1, s2)
 % Find closest points between s1 and s2
-s3.q = rotm2quat(R);
-[flag, dist, pt_cls] = distance_cfc(s1, s3,'constrained');
+s2.q = rotm2quat(R);
+[flag, dist, pt_cls] = distance_cfc(s1, s2);
 p = pt_cls.mink;
+
+if flag
+    p = s2.tc;
+end
 
 % Compute cost
 g = [R, p; 0, 0, 0, 1];
-x_diff_skew = logm(mu \ g);
-x_diff = [vex(x_diff_skew(1:3,1:3)); x_diff_skew(1:3,4)];
+x_diff = get_vee_vector(mu \ g);
 
 f = x_diff' / Sigma * x_diff;
 
