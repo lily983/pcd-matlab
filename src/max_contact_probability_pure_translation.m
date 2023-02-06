@@ -1,4 +1,4 @@
-function   [pdf_max_x, x_max] = max_probability_pure_translation(mu, Sigma, s1, s2)
+function   [pdf_max_x, x_max] = max_contact_probability_pure_translation(mu, Sigma, s1, s2)
 % max_probability_pure_translation: Center position of s2 is a Guassian random variable, 
 % the function calculate the maximum probability that it will collide with s1 
 %

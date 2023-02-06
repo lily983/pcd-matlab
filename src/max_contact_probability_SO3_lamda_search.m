@@ -1,4 +1,4 @@
- function [prob_max, g_max] = max_contact_probability(mu, Sigma, s1, s2, isplot)
+ function [prob_max, g_max] = max_contact_probability_SO3_lamda_search(mu, Sigma, s1, s2, isplot)
 % max_contact_probability Compute maximum probability density function value on the contact space
 % between two convex bodies using closed-form parametric contact space and
 % manifold optimization
@@ -48,10 +48,10 @@ options.tolgradnorm = 1e-3;
 % Compute the max contact probability
 prob_max = 1/( 8*pi^3 * sqrt(det(Sigma)) ) * exp(-1/2 * f_opt);
 
-% Get g_max
-s2.q = rotm2quat(R_opt);
-[~, ~, pt_cls] = distance_cfc(s1, s2);
-p_opt = pt_cls.mink;
+s3.q = rotm2quat(R_opt);
+[~, mink_point] = dist_cfc_update_Sigma(s1, s3, Sigma(4:6,4:6));
+
+p_opt = mink_point;
 
 g_max = [R_opt, p_opt; 0, 0, 0, 1];
 
@@ -70,18 +70,28 @@ end
 end
 
 %% Objective function
-function f = cost_function(R, mu, Sigma, s1, s2)
+function f = cost_function(R, mu, Sigma, s1, s3)
 % Find closest points between s1 and s2
-s2.q = rotm2quat(R);
-[flag, dist, pt_cls] = distance_cfc(s1, s2);
+%s3.q = rotm2quat(R);
+
+%{
+[flag, dist, pt_cls] = distance_cfc(s1, s3);
 p = pt_cls.mink;
 
 if flag
-    p = s2.tc;
+    p = s3.tc;
 end
+%}
+
+opt =  optimoptions("fsolve","OptimalityTolerance",1e-15);
+fun = @(lamda)norm((inv(Sigma(4:6,4:6)) + lamda*eye(3))\(Sigma(4:6,4:6)\mu(1:3,4) + lamda*s1.tc) - s1.tc) - s1.a(1) - s3.a(1);
+lamda0 = 0.0;
+lamda = fsolve(fun, lamda0, opt);
+
+x_max =double((inv(Sigma(4:6,4:6)) + lamda*eye(3))\(Sigma(4:6,4:6)\mu(1:3,4)  + lamda*s1.tc));
 
 % Compute cost
-g = [R, p; 0, 0, 0, 1];
+g = [R, x_max; 0, 0, 0, 1];
 x_diff = get_vee_vector(mu \ g);
 
 f = x_diff' / Sigma * x_diff;

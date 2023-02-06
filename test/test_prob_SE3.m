@@ -7,7 +7,7 @@ N = [20,20];
 s1 = SuperQuadrics({0.02*ones(1,3), [0.8,0.7], [0, 0]...
 zeros(3,1), [1, 0, 0, 0], N});
 
-for i=1:10
+for i=1:1
    
     init_quat = rand(1,4);
     init_quat = init_quat/norm(init_quat);
@@ -81,6 +81,25 @@ end
 figure; hold on;
 s1.PlotShape('b', 0.3);
 s2.PlotShape('g', 0.3);
+
+m1 = s1.GetGradientsCanonical();
+mink = MinkSumClosedForm(s1,s2,quat2rotm(s1.q),quat2rotm(s2.q));
+x_mink = mink.GetMinkSumFromGradient(m1)+s1.tc;
+
+X = reshape(x_mink(1,:), N(1), N(2)); %change array to matrix form
+Y = reshape(x_mink(2,:), N(1), N(2));
+Z = reshape(x_mink(3,:), N(1), N(2));
+
+surf(X, Y, Z,...
+ 'EdgeColor', 'k', 'EdgeAlpha', 0.2,...
+ 'FaceAlpha', 0.1, 'FaceColor', 'b'); %plot contact space
+
+[flag, dist, pt_cls, condition] = collision_cfc(s1,s2,'fixed-point');
+
+scatter3(pt_cls.mink(1),pt_cls.mink(2),pt_cls.mink(3),'r','+');
+
+
+%%
 [pdf_max_g, g_max] = max_contact_probability_SE3(mu_g, Sigma_g, s1, s2);
  
 s3 = SuperQuadrics({s2.a, s2.eps, [0, 0]...
