@@ -4,18 +4,18 @@ add_path()
 
 N = [20,20];
 
-s1 = SuperQuadrics({0.02*ones(1,3), [1.0, 1.2], [0, 0]...
+s1 = SuperQuadrics({0.02*ones(1,3), [1.0, 0.8], [0, 0]...
 zeros(3,1), [1, 0, 0, 0], N});
 
-for i=1:20
+for i=1:1
     flag = 1;
     while flag
         init_quat = rand(1,4);
         init_quat = init_quat/norm(init_quat);
-        init_posi = 0.06*rand(3,1);
+        init_posi = 0.05*rand(3,1);
 
 %         [0.024058038057378;0.026986650282266;0.026057953781762]
-        s2 = SuperQuadrics({[0.01,0.02,0.01], [1,1], [0, 0]...
+        s2 = SuperQuadrics({[0.01,0.02,0.01], [1,0.8], [0, 0]...
             init_posi, init_quat, N});
         
         figure; hold on;
@@ -47,14 +47,14 @@ for i=1:20
     prob_max_g_so3_xmax = pkf_value*pdf_max_g_so3_xmax;
     
     % Compute prob_g_max on manifold SO3 with closed point
-    [pdf_max_g_so3_cls, g_max_so3_cls] = max_contact_probability_SO3_update_sigma(mu_g, Sigma_g, s1, s2,false);
+    [pdf_max_g_so3_cls, g_max_so3_cls] = max_contact_probability_SO3_update_sigma(mu_g, Sigma_g, s1, s2,true);
     prob_max_g_so3_cls = pkf_value*pdf_max_g_so3_cls;
    
     % Compute prob_g_s1, get pdf_g value of error distribution of s2 at the pose of s1 
-    mu_vee = get_vee_vector(mu_g);
-    s1_vee = zeros(6,1);
-    pdf_g_s1 = mvnpdf(s1_vee', mu_vee', Sigma_g);
-    prob_g_s1 = pkf_value*pdf_g_s1;
+%     mu_vee = get_vee_vector(mu_g);
+%     s1_vee = zeros(6,1);
+%     pdf_g_s1 = mvnpdf(s1_vee', mu_vee', Sigma_g);
+%     prob_g_s1 = pkf_value*pdf_g_s1;
     
     % Compute exact prob_g 
      exact_prob_g = exact_contact_probability(mu_g, Sigma_g, s1, s2, 1e+04);
