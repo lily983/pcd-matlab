@@ -9,10 +9,15 @@ function prob = exact_contact_probability_pure_translation(mu, Sigma, s1, s2, N)
 %   N: Sampling points number
 prob = 0;
 
-samples = mvnrnd(mu, Sigma, N);
+samples = mvnrnd(s2.tc, Sigma, N);
 
 s3 = SuperQuadrics({s2.a, s2.eps, [0, 0]...
     s2.tc, s2.q, s2.N});
+
+% figure; hold on;
+% s1.PlotShape('b',0.4)
+% s2.PlotShape('g',0.4)
+% pause(0.1)
 
 for i=1:N
     
@@ -24,9 +29,11 @@ for i=1:N
        if norm(s1.tc-s3.tc)<=(s1.a(1)+s3.a(1))
            prob = prob+1;      
        end
-   else
-       if collision_cfc(s1,s3)
+    else
+       if collision_cfc(s1,s3,'constrained')
            prob = prob+1;
+%            s3.PlotShape('r',0.1)
+%            pause(0.1)
        end
    end
 end

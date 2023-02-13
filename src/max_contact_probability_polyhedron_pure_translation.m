@@ -66,10 +66,7 @@ for i = 1:size(patch_mink.faces,1)
     F_array(2) = dot(F(v2,n_d),n);
     F_array(3) = dot(F(v3,n_d),n);
     if isnan(max(F_array)*area)
-        warning('find nan')
-        v1
-        v2
-        v3
+        
         continue
     end
     prob = prob + max(F_array)*area;

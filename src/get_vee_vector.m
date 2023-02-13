@@ -8,6 +8,11 @@ function x = get_vee_vector(G)
 
 % Get head vector of rotation R
 theta = acos((trace(G(1:3,1:3))-1)/2);
+
+if isreal(theta) == 0
+    warning("Rotation angle is a complex number in function get_vee_vector()");
+end
+
 R_skew_matrix = theta*(G(1:3, 1:3) - G(1:3,1:3)') / (2*sin(theta));
 R_head_vector = vex(R_skew_matrix);
 

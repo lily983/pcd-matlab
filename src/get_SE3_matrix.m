@@ -8,7 +8,7 @@ function G = get_SE3_matrix(vee)
 G = zeros(4,4);
 
 x = vee(1:3,1);
-G(1:3,1:3) = eye(3) + sin(norm(x))*skew(x)/norm(x) + (1-cos(norm(x)))*skew(x)*skew(x)/sqrt(norm(x));
+G(1:3,1:3) = eye(3) + sin(norm(x))*skew(x)/norm(x) + (1-cos(norm(x)))*skew(x)*skew(x)/(norm(x)^2);
 
 G(1:3,4) = left_jacob(vee(1:3,1))*vee(4:6,1);
 G(4,4) = 1;

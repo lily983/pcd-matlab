@@ -1,4 +1,4 @@
-function   [pdf_max_x, x_max] = max_contact_probability_pure_translation_superquadric(mu, Sigma, s1, s2)
+function   [pdf_max_x, x_max] = max_contact_probability_pure_translation_superquadrics(mu, Sigma, s1, s2)
 % max_probability_pure_translation: Center position of s2 is a Guassian random variable, 
 % the function calculate the maximum probability that it will collide with s1 
 %
@@ -28,15 +28,17 @@ R2 = euclideanfactory(2);
 problem.M = R2;
 problem.cost = @(phi)cost_function(phi, s1, s3, mink, Sigma);
 
+%{
 % Initial point of optimization
 R1 = quat2rotm(s1.q);
 s3_tc_in_s1 = R1' * (s3.tc-s1.tc);
 phi0 = [atan2( s3_tc_in_s1(3), norm(s3_tc_in_s1(1:2)) ),...
             atan2( s3_tc_in_s1(2), s3_tc_in_s1(1) )];
+%}
 
 % Solve the problem
 options.maxiter = 100;
-options.tolgradnorm = 1e-4;
+options.tolgradnorm = 1e-2;
 
 [phi_opt, f_opt, ~] = trustregions(problem, [], options);
 
