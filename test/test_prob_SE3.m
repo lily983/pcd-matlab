@@ -7,12 +7,12 @@ N = [20,20];
 s1 = SuperQuadrics({0.02*ones(1,3), [1.0, 0.8], [0, 0]...
 zeros(3,1), [1, 0, 0, 0], N});
 
-for i=1:1
+for i=1:50
     flag = 1;
     while flag
         init_quat = rand(1,4);
         init_quat = init_quat/norm(init_quat);
-        init_posi = 0.05*rand(3,1);
+        init_posi = 0.06*rand(3,1);
 
 %         [0.024058038057378;0.026986650282266;0.026057953781762]
         s2 = SuperQuadrics({[0.01,0.02,0.01], [1,0.8], [0, 0]...
@@ -43,8 +43,8 @@ for i=1:1
     prob_max_g_so3_s2 = pkf_value*pdf_max_g_so3_s2;
     
     % Compute prob_g_max on manifold SO3 with x_max
-    [pdf_max_g_so3_xmax, g_max_so3_xmax] = max_contact_probability_SO3_lamda_search(mu_g, Sigma_g, s1, s2,false);
-    prob_max_g_so3_xmax = pkf_value*pdf_max_g_so3_xmax;
+%     [pdf_max_g_so3_xmax, g_max_so3_xmax] = max_contact_probability_SO3_lamda_search(mu_g, Sigma_g, s1, s2,false);
+%     prob_max_g_so3_xmax = pkf_value*pdf_max_g_so3_xmax;
     
     % Compute prob_g_max on manifold SO3 with closed point
     [pdf_max_g_so3_cls, g_max_so3_cls] = max_contact_probability_SO3_update_sigma(mu_g, Sigma_g, s1, s2,true);
@@ -58,18 +58,98 @@ for i=1:1
     
     % Compute exact prob_g 
      exact_prob_g = exact_contact_probability(mu_g, Sigma_g, s1, s2, 1e+04);
-   
+    
+     % Compute exact probability by using patch based GJK algorithm
+     exact_prob_g_GJK = exact_contact_probability_collision_mesh(mu_g, Sigma_g, s1, s2, 1e+04);
+     
+     % Compute the collision status using enlarged bounding sq
+     prob_bounding_sq = collision_enlarged_bounding_sq(s1, s2, mu_g, Sigma_g);
 
     result(1,i) = double(flag);
     result(2,i) = dist;
     result(3,i) = prob_max_g_so3_s2;
-    result(4,i) = prob_max_g_so3_xmax;
+%     result(4,i) = prob_max_g_so3_xmax;
     result(5,i) = prob_max_g_so3_cls;
     result(6,i) = exact_prob_g;
     result(8:13,i) = get_vee_vector(g_max_so3_s2);
-    result(15:20,i) = get_vee_vector(g_max_so3_xmax);
+%     result(15:20,i) = get_vee_vector(g_max_so3_xmax);
     result(22:27,i) = get_vee_vector(g_max_so3_cls);
     result(29:34,i) = get_vee_vector(mu_g);
+    result(36, i) = exact_prob_g_GJK;
+    result(37,i) = prob_bounding_sq;
+    
+end
+
+for i=1:50
+    flag = 1;
+    while flag
+        init_quat = rand(1,4);
+        init_quat = init_quat/norm(init_quat);
+        init_posi = 0.06*rand(3,1);
+
+%         [0.024058038057378;0.026986650282266;0.026057953781762]
+        s2 = SuperQuadrics({[0.01,0.02,0.01], [1,0.8], [0, 0]...
+            init_posi, init_quat, N});
+        
+        figure; hold on;
+        s1.PlotShape('b', 0.3);
+        s2.PlotShape('g', 0.3);
+        pause(1);
+        
+        [flag, dist, pt_cls, condition] = collision_cfc(s1,s2,'constrained');
+    end
+    
+    % pose error distribution of s2
+    mu_g =  [quat2rotm(s2.q), s2.tc; 0, 0, 0, 1];
+    Sigma_g = zeros(6);
+    Sigma_g(1,1) =1.0000e-4;
+    Sigma_g(2,2) =1.0000e-4;
+    Sigma_g(3,3) =1.0000e-4;
+    Sigma_g(4,4) =1.0000e-5;
+    Sigma_g(5,5) =1.0000e-5;
+    Sigma_g(6,6) =1.0000e-5;
+   
+    pkf_value = pkf_3d(s1, s2,true,false);
+    
+    % Compute prob_g_max on manifold SO3*S2
+    [pdf_max_g_so3_s2, g_max_so3_s2] = max_contact_probability_SO3_S2(mu_g, Sigma_g, s1, s2,false);
+    prob_max_g_so3_s2 = pkf_value*pdf_max_g_so3_s2;
+    
+    % Compute prob_g_max on manifold SO3 with x_max
+%     [pdf_max_g_so3_xmax, g_max_so3_xmax] = max_contact_probability_SO3_lamda_search(mu_g, Sigma_g, s1, s2,false);
+%     prob_max_g_so3_xmax = pkf_value*pdf_max_g_so3_xmax;
+    
+    % Compute prob_g_max on manifold SO3 with closed point
+    [pdf_max_g_so3_cls, g_max_so3_cls] = max_contact_probability_SO3_update_sigma(mu_g, Sigma_g, s1, s2,true);
+    prob_max_g_so3_cls = pkf_value*pdf_max_g_so3_cls;
+   
+    % Compute prob_g_s1, get pdf_g value of error distribution of s2 at the pose of s1 
+%     mu_vee = get_vee_vector(mu_g);
+%     s1_vee = zeros(6,1);
+%     pdf_g_s1 = mvnpdf(s1_vee', mu_vee', Sigma_g);
+%     prob_g_s1 = pkf_value*pdf_g_s1;
+    
+    % Compute exact prob_g 
+     exact_prob_g = exact_contact_probability(mu_g, Sigma_g, s1, s2, 1e+04);
+    
+     % Compute exact probability by using patch based GJK algorithm
+     exact_prob_g_GJK = exact_contact_probability_collision_mesh(mu_g, Sigma_g, s1, s2, 1e+04);
+     
+     % Compute the collision status using enlarged bounding sq
+     prob_bounding_sq = collision_enlarged_bounding_sq(s1, s2, mu_g, Sigma_g);
+
+    result2(1,i) = double(flag);
+    result2(2,i) = dist;
+    result2(3,i) = prob_max_g_so3_s2;
+%     result(4,i) = prob_max_g_so3_xmax;
+    result2(5,i) = prob_max_g_so3_cls;
+    result2(6,i) = exact_prob_g;
+    result2(8:13,i) = get_vee_vector(g_max_so3_s2);
+%     result(15:20,i) = get_vee_vector(g_max_so3_xmax);
+    result2(22:27,i) = get_vee_vector(g_max_so3_cls);
+    result2(29:34,i) = get_vee_vector(mu_g);
+    result2(36, i) = exact_prob_g_GJK;
+    result2(37,i) = prob_bounding_sq;
     
 end
 
@@ -122,14 +202,14 @@ mu_g =  [quat2rotm(s2.q), s2.tc; 0, 0, 0, 1];
 %     Sigma_g(5,5) =1.0000e-6;
 %     Sigma_g(6,6) =1.0000e-6;
 % 
-    Sigma_g(1,1) =1.0000e-2;
-    Sigma_g(2,2) =1.0000e-2;
-    Sigma_g(3,3) =1.0000e-2;
-    Sigma_g(4,4) =1.0000e-5;
-    Sigma_g(5,5) =1.0000e-5;
-    Sigma_g(6,6) =1.0000e-5;
+    Sigma_g(1,1) =1.0000e-3;
+    Sigma_g(2,2) =1.0000e-3;
+    Sigma_g(3,3) =1.0000e-3;
+    Sigma_g(4,4) =1.0000e-6;
+    Sigma_g(5,5) =1.0000e-6;
+    Sigma_g(6,6) =1.0000e-6;
 
-n=10000;
+n=200;
 gi_rand_vee = mvnrnd(get_vee_vector(mu_g), Sigma_g, n);
 for i = 1:n
     gi_rand_matrix = get_SE3_matrix(gi_rand_vee(i,1:6)');
@@ -141,6 +221,6 @@ end
 
 %% Store results
 pathname = '~/prob-collision-matlab/test/result';
-test = "se3_R_10_2_t_10_5" ;
+test = "se3_R_10_2_t_10_5_cfc_CS" ;
 filename = test + ".mat";
 save(fullfile(pathname, filename), 'result')
