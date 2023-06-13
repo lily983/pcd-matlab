@@ -1,7 +1,7 @@
-function prob = max_prob_gaussian_mixture(s1, s2, mx, Sigmax, aRatio, bRatio, mb)
+function prob = max_prob_gaussian_mixture(s1, s2, mx, Sigmax)
 [mf, Sigmaf] = get_bounding_ellip(s1, s2);
 
-[a1,a2,b1,b2] = get_gmm_param(Sigmaf, aRatio, bRatio, mb);
+[a1,a2,b1,b2] = get_gmm_param(Sigmaf, 10, 3);
 
 dimension = size(Sigmax,1);
 

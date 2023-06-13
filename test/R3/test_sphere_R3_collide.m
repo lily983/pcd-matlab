@@ -57,7 +57,7 @@ for i=1:N
      end
      
      try 
-         prob_bounding_minksum_GM = max_prob_gaussian_mixture(s1, s2, mu, Sigma, 10, 10, 3);
+         prob_bounding_minksum_GM = max_prob_gaussian_mixture(s1, s2, mu, Sigma);
      catch
          prob_bounding_minksum_GM = NaN;
      end
