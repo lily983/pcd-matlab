@@ -1,6 +1,12 @@
-function prob = exact_contact_probability_collision_mesh(mu, Sigma, s1, s2, N)
-
-
+function prob = exact_contact_probability(mu, Sigma, s1, s2, N)
+%   exact_contact_probability: Numerical approximation of
+%   the exact probability of collision
+%   
+%   Inputs:
+%   mu: Mean pose (center of s2) 4by4 matrix
+%   Sigma: Covariance of the probability
+%   s1, s2: Two convex bodies
+%   N: Sampling points number
 prob = 0;
 
 mu_vee = get_vee_vector(mu);
@@ -14,7 +20,7 @@ s3 = SuperQuadrics({s2.a, s2.eps, s2.taper, s2.tc, s2.q, s2.N});
 % s2.PlotShape('g', 0.1);
 
 for i=1:N
-    i
+%     i
     g_rand = get_SE3_matrix(samples(i, 1:6)');
     
     % Update pose error
@@ -27,7 +33,7 @@ for i=1:N
            prob = prob+1;      
        end
     else
-       if collision_mesh(s1,s3)
+       if collision_cfc(s1,s3,'constrained')
            prob = prob+1;
 %            s3.PlotShape('r',0.1)
 %            pause(0.1)
@@ -35,4 +41,5 @@ for i=1:N
    end
 end
 prob=prob/N;
+
 end

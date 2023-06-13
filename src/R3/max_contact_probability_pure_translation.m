@@ -1,4 +1,4 @@
-function   [pdf_max_x, x_max] = max_contact_probability_pure_translation(mu, Sigma, s1, s2)
+function   [pdf_max_x, x_max] = max_contact_probability_pure_translation(mu, Sigma, s1, s2, flag)
 % max_probability_pure_translation: Center position of s2 is a Guassian random variable, 
 % the function calculate the maximum probability that it will collide with s1 
 %
@@ -14,11 +14,11 @@ function   [pdf_max_x, x_max] = max_contact_probability_pure_translation(mu, Sig
 %   colliding with s1
 %   pdf_max_x: The probability of x_max
 
-% if collision_cfc(s1,s2,'constrained')
-%     x_max = s2.tc;
-%     pdf_max_x  = mvnpdf(x_max, mu, Sigma);
-%     return
-% end
+if flag
+    x_max = s2.tc;
+    pdf_max_x = mvnpdf(x_max, mu, Sigma);
+    return
+end
 
 opt =  optimoptions("fsolve","OptimalityTolerance",1e-15);
 fun = @(lamda)norm((inv(Sigma) + lamda*eye(3))\(Sigma\mu + lamda*s1.tc) - s1.tc) - s1.a(1) - s2.a(1);

@@ -45,7 +45,7 @@ lb = [0,0,0,0.1,0.1,-inf,-inf,-inf,-1,-1,-1,-1];
 ub = [inf,inf,inf,2,2,inf,inf,inf,1,1,1,1];
 
 options = optimoptions('lsqnonlin',...
-    'Algorithm', 'levenberg-marquardt', 'display', 'iter-detailed');
+    'Algorithm', 'levenberg-marquardt', 'display', 'none');
 [var_opt, cost] = lsqnonlin(@(var) sq_model(var, pts),...
     var0, lb, ub, options);
 

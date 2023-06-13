@@ -25,10 +25,12 @@ problem.cost = @(R_phi)cost_function(R_phi, s1, s3, mu,Sigma);
 % Initial point of optimization
 R1 = quat2rotm(s1.q);
 R2 = quat2rotm(s2.q);
-s2_tc_in_s1 = R1' * (s2.tc-s1.tc);
+% s2_tc_in_s1 = R1' * (s2.tc-s1.tc);
+s2_tc_in_s1 = R1' * s2.tc;
 psi0 = [atan2( s2_tc_in_s1(3), norm(s2_tc_in_s1(1:2)) ),...
             atan2( s2_tc_in_s1(2), s2_tc_in_s1(1) )];
-R_phi0.R = R2;
+        
+R_phi0.R = SO3_S2.rand().R;
 R_phi0.phi = psi0';
 
 
@@ -36,7 +38,7 @@ R_phi0.phi = psi0';
 options.maxiter = 100;
 options.tolgradnorm = 1e-4;
 
-[R_phi_final, f_opt, info] = trustregions(problem, [], options);
+[R_phi_final, f_opt, info] = trustregions(problem, [],  options);
 
 mink_final = MinkSumClosedForm(s1, s3, quat2rotm(s1.q), R_phi_final.R);
 

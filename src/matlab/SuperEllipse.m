@@ -1,265 +1,346 @@
-% Class of Superellipse operations
-%
-% Author: Qianli Ma, qianli.ma622@gmail.com
-% Maintainer: Sipu Ruan, ruansp@jhu.edu, Johns Hopkins University, 2018
-%
-
-% DEPENDENCIES: rvctools/robot by Peter Corkes
-classdef SuperEllipse
-    % SuperEllipse is a SuperQuadrics in 2D
+classdef SuperEllipse < handle
+    % SuperEllipse Class of Superellipse operations, a SuperQuadric in 2D
+    % 
+    %  Inputs:
+    %    val(1:2): Semi-axis lengths
+    %    val(3)  : Exponent power
+    %    val(4)  : Tapering factor, default = 0
+    %    val(5:6): Center of the superellipse
+    %    val(7)  : Angle of the superellipse
+    %    val(8)  : Number of points to be sampled on boundary
+    %
+    %  Author:
+    %    Sipu Ruan, ruansp@nus.edu.sg, 2021
     
     properties
-        ra      % length of semi-major axis
-        rb      % length of semi-minor axis
+        a       % length of semi-axes
         eps     % exponent for the signed power function
+        taper   % tapering factor
         
-        % in the world frame
+        % pose of the object
+        tc      % center of superellipse
         ang     % angle for the orientation
-        tx      % x of center
-        ty      % y of center
         
-        N       % No. of interpolated points on the perimeter
-        color   % fill color of the superellipse
-        
-        infla   % inflation factor for Kinematics of Containment
-        polyVtx % Vertices for polyhedron local c-space
+        N       % number of vertices on the boundary
+    end
+    
+    properties (Access = private)
+        theta   % Angle parameters
     end
     
     methods
         %% Constructor
-        % Use a 1 by 7 array and char to contruct the object
-        function obj = SuperEllipse(val, col, infla)
-            %SUPERELLIPSE: construct class object
-            if nargin ~= 3
-                fprintf('Error, no. of inputs not correct. \n')
-                fprintf('SuperEllipse initialization failed! \n')
-                return
-            end
-            
-            if length(val) ~= 7
-                fprintf('Error, length 1st input not equal to 7!\n')
-                fprintf('SuperEllipse initialization failed! \n')
-                return
+        function obj = SuperEllipse(val)
+            if length(val) ~= 8
+                error('Length of 1st input not equal to 8!')
             else
-                obj.ra    = val(1);
-                obj.rb    = val(2);
+                obj.a     = val(1:2);
                 obj.eps   = val(3);
+                obj.taper = val(4);
+                obj.tc    = val(5:6)';
+                obj.ang   = val(7);
                 
-                obj.tx    = val(4);
-                obj.ty    = val(5);
-                obj.ang   = val(6);
-                
-                obj.N     = val(7);
-                obj.color = col;
-                obj.infla = infla;
-                
-                if infla > 0
-                    obj.polyVtx = obj.LocalCSpace();
-                end
+                obj.N = val(8);
+                obj.theta = GenerateParameters(obj, obj.N);
             end
         end
         
-        %% Minkowski Operation with ellipse
-        function X_eb = MinkowskiSum_ES(obj, objEllip, K)
-            %SuperEllipse.MinkowskiSum_ES:
+        %% Set the number of vertices on boundary
+        function obj = SetNumVertices(obj, N)
+            % SetNumVertices Set the number of vertices to be sampled on
+            % boundary
             %
-            % calculate the Minkowski sum and difference of a superellipse
-            % (obj) and an ellipse (objEllip)
-            %
-            % SuperEllipse#1: stationary (arena or obstacle)
-            % Ellipse#2: moving (robot) [objEllip.eps == 1]
-            %
-            % K = -1: the robot moving inside the arena,
-            % collision-free space (CFS): the Minkowski difference of the
-            % two ellipses
-            %
-            % K = 1: the robot moving outside the obstacle,
-            % collision-free space (CFS): the Minkowski sum of the two
-            % ellipses
-            %
-            % Note:
-            % - After Step 1, the curvature of the shrinked ellipse should
-            %   be bigger than the largest curvature of the shrined
-            %   superellipse
-            %
+            %  Inputs:
+            %    N: Number of vertices to be sampled on boundary
             
-            if objEllip.eps ~= 1
-                fprintf('Second object is not ellipse. \n')
-                fprintf('function is aborted. \n')
-                return
-            end
-                  
-            % Parameters
-            the = 0:2*pi/(obj.N-1):2*pi;
-            
-            a1 = obj.ra; b1 = obj.rb; th1 = obj.ang; eps1 = obj.eps;
-            a2 = objEllip.ra; b2 = objEllip.rb; th2 = objEllip.ang;
-            C = [obj.tx;obj.ty];
-            
-            R1 = rot2(th1);
-            R2 = rot2(th2);
-            
-            r = min([a1,b1]);
-            Tinv = R2*diag([a2/r,b2/r])*R2';
-            
-            gradPhi = 2/eps1 * [sc_eps(the, 2-eps1, 'cos')/a1;
-                sc_eps(the, 2-eps1, 'sin')/b1];
-            
-            X = R1*[a1*sc_eps(the, eps1, 'cos'); b1*sc_eps(the, eps1, 'sin')] + C;
-            
-            % Closed-Form Minkowski Sum/Difference
-            X_eb = X + K*r*Tinv^2*R1*gradPhi ./ sqrt(sum( (Tinv*R1*gradPhi).^2, 1 ));
-            
+            obj.theta = GenerateParameters(obj, N);
+            obj.n_vtx = N;
         end
         
-        %% Containment check
-        function containment = IsContainedES(obj, objSE)
-            %SuperEllipse.IsContained_ES:
+        %% Get implicit function value
+        function f = GetImplicitFunction(obj, x)
+            % GetImplicitFunction Get implicit expression value of
+            % superellipse for a point in space. The point is expressed in
+            % global frame
             %
-            % check whether superellipse#1 is fully contained in
-            % superellipse#2 by interpolating superellipse#1 based on its
-            % explicit expression, and substituting the points into the
-            % implicit equation of superellipse#2
+            %  Inputs:
+            %    x: A set of points in space, 2xN vector
             %
-            % 0: contained,     no collision
-            % 1: not contained, in collision
-            
-            containment = 0; % Assume containment
-            
-            % Get N interpolated points of SuperEllipse#2
-            if isa(objSE, 'SuperEllipse')
-                % pnt = obj2.GetPoints; % x1r
-            else
-                fprintf('the 2nd input is not an object of SuperEllipse \n');
-                return
-            end
-            
-            pnt = obj.GetPoints;
-            % Transform pnts from global frame into the body frame of
-            % SuperEllipse#2
-            % Equation: R2^T * x1r - Tx = x2
-            pnt_test = rot2(objSE.ang)'*(pnt - [objSE.tx; objSE.ty]);
-            length = size(pnt_test,2);
-            
-            % Use the implicit equation of SuperEllipse#1 to test whether
-            % all points of SuperEllipse#2 are contained in SuperEllipse#1
-            for j = 1:length
-                if  abs(pnt_test(1,j)/objSE.ra)^(2/objSE.eps) + ...
-                        abs(pnt_test(2,j)/objSE.rb)^(2/objSE.eps) > 1
-                    containment = 1; % Not contained
-                    return
-                end
-            end
+            %  Outputs:
+            %    f: implicit expression value of superellipse, 1xN vector
+
+            x = obj.DeTaperPoint(x);
+            f = obj.GetImplicitFunctionCanonical(x);
         end
         
-        %% Generate Local C-Space using KC
-        function polyVtx = LocalCSpace(obj)
-            % Parameters
-            epi = obj.infla;
-            a = [obj.ra; obj.rb];
-            b = a*(epi+1);
-            ratio = obj.rb/obj.ra;
-            c = epi*sqrt(ratio/((ratio-1+ratio*epi)*(ratio-1-epi)));
+        function f = GetImplicitFunctionCanonical(obj, x)
+            % GetImplicitFunctionCanonical Get implicit expression value of
+            % superellipse for a point in space
+            %
+            %  Inputs:
+            %    x: A set of points expressed in body frame, 2xN vector
+            %
+            %  Outputs:
+            %    f: implicit expression value of superellipse, 1xN vector
             
-            aa = b(1)-a(1);
-            bb = b(2)-a(2);
-            cc = c;
-            
-            % H, h, c symbolic expressions
-            syms a1 a2 b1 b2 u1 u2 theta
-            Hhc_2D.H = [(a1^2*u1^2)/b2^2 + (a2^2*u2^2)/b1^2,...
-                - (a2*u2*cos(theta))/b1^2 - (a1*u1*sin(theta))/b2^2,...
-                (a1*u1*cos(theta))/b2^2 - (a2*u2*sin(theta))/b1^2;
-                -(a2*u2*cos(theta))/b1^2 - (a1*u1*sin(theta))/b2^2,...
-                cos(theta)^2/b1^2 + sin(theta)^2/b2^2,...
-                cos(theta)*sin(theta)*(1/b1^2 - 1/b2^2);
-                (a1*u1*cos(theta))/b2^2 - (a2*u2*sin(theta))/b1^2,...
-                cos(theta)*sin(theta)*(1/b1^2 - 1/b2^2),...
-                cos(theta)^2/b2^2 + sin(theta)^2/b1^2];
-            Hhc_2D.h = [(2*a1*a2*u1*u2)/b2^2 - (2*a1*a2*u1*u2)/b1^2;
-                (2*a1*u1*cos(theta))/b1^2 - (2*a2*u2*sin(theta))/b2^2;
-                (2*a2*u2*cos(theta))/b2^2 + (2*a1*u1*sin(theta))/b1^2];
-            Hhc_2D.c = (a1^2*u1^2)/b1^2 + (a2^2*u2^2)/b2^2;
-            
-            % Find extreme vertices with largest magnitude in c-space
-            [Z_max, ~] = KC_Extreme(a, epi+1, 0, Hhc_2D);
-            vtx(:,1) = Z_max(:,2);
-            vtx(:,2) = Z_max(:,3);
-            vtx(:,3) = Z_max(:,1);
-            
-            % Find extreme vertices in each axis in c-space
-            Z_end = [aa,0,0; -aa,0,0; 0,bb,0; 0,-bb,0; 0,0,cc; 0,0,-cc];
-            vtx = [vtx; Z_end];
-            
-            % Generate inversions of matrices for point-in-simplex test
-            enum = delaunay(vtx(:,1), vtx(:,2), vtx(:,3));
-            %             enum = nchoosek(1:size(vtx,1), size(vtx,2)+1);
-            numMat = 1;
-            for i = 1:size(enum,1)
-                simp = vtx(enum(i,:),:)';
-                simp_homo = [simp; ones(1,size(simp,2))];
-                
-                % disgard the simplex if (n+1) points are linearly dependent
-                if rank(simp_homo) < size(simp_homo,2)
-                    continue;
-                end
-                
-                inv_simpMat(:,:,numMat) = inv(simp_homo);
-                numMat = numMat + 1;
-            end
-            
-            polyVtx.vertex = vtx;
-            polyVtx.lim = [aa; bb; cc];
-            polyVtx.invMat = inv_simpMat;
+            f = eps_fun( (x(1,:) ./ obj.a(1)).^2, 1/obj.eps ) +...
+                eps_fun( (x(2,:) ./ obj.a(2)).^2, 1/obj.eps ) - 1;
         end
         
-        %% Get points on boundary
+        %% Get points on boundary from different parameterizations
         function pnt = GetPoints(obj)
-            %SuperEllipse.GetPoints:
+            % GetPoints Get points on boundary in global frame
             %
-            % Generate N interpolated points of the given superellipse
+            %  Outputs:
+            %    pnt: The point on boundary in global frame, 2xN vector
             
-            the = linspace(2*pi/(obj.N+1),2*pi+2*pi/(obj.N+1),obj.N);
+            pnt_canonical = obj.GetPointsCanonical();
+            pnt_tapered = obj.TaperPoint(pnt_canonical);
+            pnt = rot2(obj.ang) * pnt_tapered + obj.tc;
+        end
+        
+        function pnt = GetPointsCanonical(obj)
+            % GetPointsCanonical Get points on boundary in body frame
+            %
+            %  Outputs:
+            %    pnt: The point on boundary in body frame, 2xN vector
             
-            x   = obj.ra*obj.sc_eps(the, obj.eps, 'cos');
-            y   = obj.rb*obj.sc_eps(the, obj.eps, 'sin');
-            pnt = rot2(obj.ang)*[x; y] + [obj.tx; obj.ty];
+            pnt(1,:) = obj.a(1) * eps_fun(cos(obj.theta), obj.eps);
+            pnt(2,:) = obj.a(2) * eps_fun(sin(obj.theta), obj.eps);
+        end
+        
+        function f_m = GetPointsFromParamTapered(obj, par, opt)
+            % GetPointsFromParamTapered Get boundary points using
+            % different parameterizations after global deformations
+            %
+            %  Inputs:
+            %    par: Parameters
+            %    opt: Indicator of parameterization
+            %
+            %  Outputs:
+            %    f_m: A set of boundary points, 2xN vector
+            
+            if strcmp(opt, 'gradient')
+                f_m = obj.GetPointsFromGradient(par);
+            end
+            
+            % Tapering deformation
+            f_m = obj.TaperPoint(f_m);
+        end
+        
+        function f_m = GetPointsFromGradient(obj, m)
+            % GetPointsFromGradient Get boundary points from gradient
+            % vectors
+            %
+            %  Inputs:
+            %    m  : A set of gradient vectors, 2xN vector
+            %
+            %  Outputs:
+            %    f_m: cartesian coordinates of points, 2xN vector
+            
+            f_m(1,:) = obj.a(1) .* eps_fun( obj.eps*obj.a(1)/2 * m(1,:),...
+                obj.eps/(2-obj.eps) );
+            f_m(2,:) = obj.a(2) .* eps_fun( obj.eps*obj.a(2)/2 * m(2,:),...
+                obj.eps/(2-obj.eps) );
+        end
+        
+        %% Get gradient on boundary from different parameterizations
+        function m_t = GetGradients(obj)
+            % GetGradients Get gradient vectors in global frame
+            %
+            %  Outputs:
+            %    m_t: A set of gradient vectors in global frame, 2xN vector
+            
+            m = obj.GetGradientsCanonical();
+            x = obj.GetPointsFromGradient(m);
+            m_t = rot2(obj.ang) * obj.TaperGradient(m, x);
+        end
+        
+        function m = GetGradientsCanonical(obj)
+            % GetGradientsCanonical Get gradient vectors in body frame
+            %
+            %  Outputs:
+            %    m: A set of gradient vectors in body frame, 2xN vector
+            
+            m(1,:) = 2/(obj.a(1)*obj.eps) * ...
+                eps_fun(cos(obj.theta), 2-obj.eps);
+            m(2,:) = 2/(obj.a(2)*obj.eps) * ...
+                eps_fun(sin(obj.theta), 2-obj.eps);
+        end
+        
+        function m = GetGradientsFromParamTapered(obj, par, opt)
+            % GetGradientsFromParamTapered Get gradient vector using
+            % different parameterizations after global deformations
+            %
+            %  Inputs:
+            %    par: Parameters
+            %    opt: Indicator of parameterization
+            %
+            %  Outputs:
+            %    m  : A set of gradient vectors, 2xN vector
+            
+            if strcmp(opt, 'angle')
+                m = obj.GetGradientFromAngle(par);
+                
+            elseif strcmp(opt, 'cartesian')
+                m = obj.GetGradientsFromCartesian(par);
+                
+            elseif strcmp(opt, 'hypersphere')
+                m = obj.GetGradientsFromHypersphere(par);
+            end
+            
+            % Tapering deformation
+            x = obj.GetPointsFromGradient(m);
+            m = obj.TaperGradient(m, x);
+        end
+        
+        function m = GetGradientFromAngle(obj, theta)
+            % GetGradientFromAngle Get gradient vectors from angular
+            % parameters
+            %
+            %  Inputs:
+            %    theta: A set of angular parameters, 1xN vector
+            %
+            %  Outputs:
+            %    m    : A set of gradient vectors, 2xN vector
+            
+            m(1,:) = 2/(obj.a(1)*obj.eps) * eps_fun(cos(theta), 2-obj.eps);
+            m(2,:) = 2/(obj.a(2)*obj.eps) * eps_fun(sin(theta), 2-obj.eps);
+        end
+        
+        function m = GetGradientsFromCartesian(obj, x)
+            % GetGradientsFromCartesian Get gradient vectors from boundary
+            % points
+            %
+            %  Inputs:
+            %    x: Cartesian coordinates of points, 2xN vector
+            %
+            %  Outputs:
+            %    m: A set of gradient vectors, 2xN vector
+            
+            m(1,:) = 2/(obj.a(1)*obj.eps) *...
+                eps_fun( x(1,:)/obj.a(1), 2/obj.eps-1 );
+            m(2,:) = 2/(obj.a(2)*obj.eps) *...
+                eps_fun( x(2,:)/obj.a(2), 2/obj.eps-1 );
+        end
+        
+        function m = GetGradientsFromHypersphere(obj, u)
+            % GetGradientsFromHypersphere Get gradient vectors from
+            % hypersphere parameters
+            %
+            %  Inputs:
+            %     u: Unit hypersphere parameters, 2xN vector
+            %
+            %  Outputs:
+            %    m: A set of gradient vectors, 2xN vector
+            
+            m(1,:) = 2/(obj.a(1)*obj.eps) .* eps_fun(u(1,:), 2-obj.eps);
+            m(2,:) = 2/(obj.a(2)*obj.eps) .* eps_fun(u(2,:), 2-obj.eps);
+        end
+        
+        %% Get unit hypersphere parameters from gradient
+        function u = GetHypersphereFromGradient(obj, m)
+            % GetHypersphereFromGradient Get hypersphere parameters from
+            % gradient vectors
+            %
+            %  Inputs:
+            %    m: A set of gradient vectors, 2xN vector
+            %
+            %  Outputs:
+            %    u: A set of unit hypersphere parameters, 2xN vector
+            
+            u(1,:) = eps_fun( (obj.a(1)*obj.eps)/2 .* m(1,:),...
+                1/(2-obj.eps) );
+            u(2,:) = eps_fun( (obj.a(2)*obj.eps)/2 .* m(2,:),...
+                1/(2-obj.eps) );
+        end
+        
+        %% Global tapering deformations
+        function x = TaperPoint(obj, x)
+            % TaperPoint Get boundary points after tapering deformation
+            %
+            %  Inputs:
+            %    x: Original boundary points, 2xN vector
+            %
+            %  Outputs:
+            %    x: Tapered boundary points, 2xN vector
+            
+            x(1,:) = (obj.taper / obj.a(2) .* x(2,:) + 1) .* x(1,:);
+        end
+        
+        function x = DeTaperPoint(obj, x)
+            % DeTaperPoint Get original boundary points from tapering 
+            % deformation
+            %
+            %  Inputs:
+            %    x: Tapered boundary points, 2xN vector
+            %
+            %  Outputs:
+            %    x: Original boundary points, 2xN vector
+            
+            x(1,:) = x(1,:) ./ (obj.taper / obj.a(2) .* x(2,:) + 1);
+        end
+        
+        function m = TaperGradient(obj, m, x)
+            % TaperGradient Get boundary point gradient after tapering
+            % deformation
+            %
+            %  Inputs:
+            %    m: Original gradients of boundary points, 2xN vector
+            %    x: Original boundary points, 2xN vector
+            %
+            %  Outputs:
+            %    m: Tapered gradients, 2xN vector
+            
+            fx = obj.taper / obj.a(2) .* x(2,:) + 1;
+            fxp = obj.taper / obj.a(2);
+            
+            m(2,:) = -fxp .* x(1,:) .* m(1,:) + fx .* m(2,:);
         end
         
         %% Plot superelliptical shape
-        function PlotShape(obj, color)
-            %SuperEllipse.PlotShape:
+        function PlotShape(obj, color, faceAlpha)
+            % PlotShape Plot the superellipse shape
             %
-            % Plot the superellipse given the No. of points and fill color
+            %  Inputs:
+            %    color    : the color of the surface patch
+            %    faceAlpha: transparency of the patch, range in [0,1]
+            %
+            %  See also
+            %    patch
+            
+            if nargin == 1
+                color = 'b';
+            end
+            
             if nargin == 2
-                obj.color = color;
+                faceAlpha = 0.6;
             end
             
-            xy = GetPoints(obj);
-            patch(xy(1,:), xy(2,:), obj.color, 'FaceAlpha', 0.6);
+            xy = obj.GetPoints();
+            patch(xy(1,:), xy(2,:), color, 'FaceAlpha', faceAlpha);
         end
         
-        %% Plot Minkowski boundary
-        function PlotMinkowskiShape(obj, objEllip, K)
-            %SuperEllipse.PlotShape:
+        %% Generate almost equally spaced parameters
+        function theta = GenerateParameters(obj, N)
+            % GenerateParameters Generate angular parameters of the
+            % boundary
             %
-            % Plot the superellipse given the No. of points and fill color
+            %  Inputs:
+            %    N    : Number of points to be sampled in boundary
+            %
+            %  Outputs:
+            %    theta: Angular parameters
             
-            xy = MinkowskiSum_ES(obj, objEllip, K);
-            patch(xy(1,:), xy(2,:), obj.color, 'FaceAlpha', 0.8);
-        end
-        
-        %% Exponentiation function
-        function val = sc_eps(obj, angle, eps, name)
-            %SuperEllipse.sc_eps: a sin/cos exponentiation function
+            theta_0 = linspace(-pi, pi, N);
             
-            if strcmp(name, 'sin')
-                val = sign(sin(angle)).*abs(sin(angle)).^eps;
-            elseif strcmp(name, 'cos')
-                val = sign(cos(angle)).*abs(cos(angle)).^eps;
-            else
-                printf('The third input has to be either "cos" or "sin".\n')
-            end
+            % Almost equally spaced samples
+            theta = atan( sign(tan(theta_0)) .* ...
+                abs(tan(theta_0)).^(1/obj.eps) );
+            
+            % Adjust range of omega from [-pi/2,pi/2] to [-pi,pi]
+            theta(theta_0 > pi/2) = theta(theta_0 > pi/2) + pi;
+            theta(theta_0 < -pi/2) = theta(theta_0 < -pi/2) - pi;
         end
     end
 end

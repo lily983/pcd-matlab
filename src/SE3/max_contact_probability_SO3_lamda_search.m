@@ -1,4 +1,4 @@
- function [prob_max, g_max] = max_contact_probability_SO3_update_sigma(mu, Sigma, s1, s2, isplot)
+ function [prob_max, g_max] = max_contact_probability_SO3_lamda_search(mu, Sigma, s1, s2, isplot)
 % max_contact_probability Compute maximum probability density function value on the contact space
 % between two convex bodies using closed-form parametric contact space and
 % manifold optimization
@@ -36,7 +36,9 @@ so3 = rotationsfactory(3, 1);
 problem.M = so3;
 problem.cost = @(R) cost_function(R, mu, Sigma, s1, s3);
 
-R0 = eye(3);
+% Initial value
+R0 = quat2rotm(s2.q);
+
 % Use auto-differentiation for gradient computations
 % problem = manoptAD(problem);
 
@@ -44,15 +46,15 @@ R0 = eye(3);
 options.maxiter = 100;
 options.tolgradnorm = 1e-2;
 
-[R_opt, f_opt, info] = trustregions(problem, [], options);
+[R_opt, f_opt, info] = trustregions(problem,[],  options);
 
 % Compute the max contact probability
 prob_max = 1/( 8*pi^3 * sqrt(det(Sigma)) ) * exp(-1/2 * f_opt);
 
 s3.q = rotm2quat(R_opt);
-[~, mink_point] = dist_cfc_update_Sigma(s1, s3, Sigma(4:6,4:6));
+[~, x_max] = max_contact_probability_pure_translation_superquadrics(mu(1:3,4), Sigma(4:6,4:6), s1, s3);
 
-p_opt = mink_point;
+p_opt = x_max;
 
 g_max = [R_opt, p_opt; 0, 0, 0, 1];
 
@@ -74,14 +76,13 @@ end
 function f = cost_function(R, mu, Sigma, s1, s3)
 
 s3.q = rotm2quat(R);
-[~, mink_point] = dist_cfc_update_Sigma(s1, s3, Sigma(4:6,4:6));
 
-x_max = mink_point;
+[~, x_max] = max_contact_probability_pure_translation_superquadrics(mu(1:3,4), Sigma(4:6,4:6), s1, s3);
 
 % Compute cost
 g = [R, x_max; 0, 0, 0, 1];
 x_diff = get_vee_vector(mu \ g);
 
-f = x_diff' / Sigma * x_diff;
+f = x_diff' / Sigma * x_diff
 
 end

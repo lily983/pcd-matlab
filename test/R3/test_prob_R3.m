@@ -85,11 +85,11 @@ surf(X, Y, Z,...
  s2.PlotShape('g', 0.3);
 
 % x_max when sigma has the same diagonal value
-[pdf_max_x_ss, x_max_ss] = max_contact_probability_pure_translation(mu, Sigma_same, s1, s2)
+[pdf_max_x_ss, x_max_ss] = max_contact_probability_pure_translation(mu, Sigma_same, s1, s2, 0)
 scatter3(x_max_ss(1), x_max_ss(2), x_max_ss(3),	200, 'r');
 
 % x_max when sigma has the different diagonal value
-[pdf_max_x_sd, x_max_sd] = max_contact_probability_pure_translation(mu, Sigma_different, s1, s2)
+[pdf_max_x_sd, x_max_sd] = max_contact_probability_pure_translation(mu, Sigma_different, s1, s2, 0)
 scatter3(x_max_sd(1), x_max_sd(2), x_max_sd(3),200,"MarkerEdgeColor","#9932CC");
 
 v =  4*pi/3*(s1.a(1)+s2.a(1))^3 ;

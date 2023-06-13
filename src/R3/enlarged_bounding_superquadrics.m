@@ -1,4 +1,4 @@
-function sq_patch = enlarged_bounding_superquadrics(s2, Mu, Sigma)
+function s3 = enlarged_bounding_superquadrics(s2, Mu, Sigma)
 % enlarged_superquadrics_contact_probability This function computes an
 % enlarged bounding convex hull of s2 under pose error
 % Every variables in the vee vector in se(3) range in mu+/-3*sqrt(sigma)
@@ -14,7 +14,7 @@ deviation = zeros(6,1);
 for i=1:6
     for j=1:6
         if i== j
-            deviation(k) = sqrt(Sigma(i,i));
+            deviation(k) = sqrt(Sigma(i,i))*3;
             k = k+1;
         end
     end
@@ -160,7 +160,10 @@ for i=1:64
     
     g_matrix = get_SE3_matrix(vee(:,i));
     s3.tc = g_matrix(1:3,4);
-    s3.q = rotm2quat(g_matrix(1:3,1:3));
+    %if norm is less than threshold, then it is position error case
+    if norm(deviation(1:3,1)-zeros(3,1))>1e-04
+        s3.q = rotm2quat(g_matrix(1:3,1:3));
+    end
 %     s3.PlotShape('r',0.05)
 %     pause(0.2);
     
@@ -184,5 +187,23 @@ end
 k = convhull(points');
 sq_patch = trisurf(k,points(1,:)',points(2,:)',points(3,:)');
 
+surf_points1(:,:) = [sq_patch.XData(1,:)', sq_patch.YData(1,:)', sq_patch.ZData(1,:)'];
+surf_points2(:,:) = [sq_patch.XData(2,:)', sq_patch.YData(2,:)', sq_patch.ZData(2,:)'];
+surf_points3(:,:) = [sq_patch.XData(3,:)', sq_patch.YData(3,:)', sq_patch.ZData(3,:)'];
+surf_points(:,:) = [surf_points1(:,:); surf_points2(:,:); surf_points3(:,:)];
+
+
+% Test if points are on the surface of convex hull
+% surf_points = inpolyhedron(sq_patch.Faces(), sq_patch.Vertices(), points(:,:)', 'TOL', 1e-07)
+
+[sq, ~] = superquadric_fitting(surf_points(:,:)');
+
+s3 = SuperQuadrics({sq.a, sq.eps, [0, 0]...
+    sq.pose.tc, sq.pose.q, s2.N});
+
+% hold on;
+% s2.PlotShape('g',0.4);
+% pause(1)
+% s3.PlotShape('b', 0.4);
 
 end

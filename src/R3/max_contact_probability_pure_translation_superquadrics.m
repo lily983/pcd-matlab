@@ -1,4 +1,4 @@
-function   [pdf_max_x, x_max] = max_contact_probability_pure_translation_superquadrics(mu, Sigma, s1, s2)
+function   [pdf_max_x, x_max] = max_contact_probability_pure_translation_superquadrics(mu, Sigma, s1, s2, flag)
 % max_probability_pure_translation: Center position of s2 is a Guassian random variable, 
 % the function calculate the maximum probability that it will collide with s1 
 %
@@ -15,7 +15,7 @@ function   [pdf_max_x, x_max] = max_contact_probability_pure_translation_superqu
 s3 = SuperQuadrics({s2.a, s2.eps, [0, 0]...
     s2.tc, s2.q, s2.N});
 
-if collision_cfc(s1,s3)
+if flag
     x_max = s3.tc;
     pdf_max_x  = mvnpdf(x_max, mu, Sigma);
     return
