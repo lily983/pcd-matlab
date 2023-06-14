@@ -3,7 +3,7 @@ MATLAB implementation of the proposed probabilistic collision detection (PCD) al
 
 ## Dependencies
 - Manifold optimization toolbox: [manopt 7.0.0](https://www.manopt.org/index.html)
--SLM - Shape Language Modeling: [matlab file change]
+-SLM - Shape Language Modeling: []
 
 ## Test scripts
 - [Bug] [test_prob_collision.m](test/test_prob_collision.m): Test for the proposed PCD algorithm
