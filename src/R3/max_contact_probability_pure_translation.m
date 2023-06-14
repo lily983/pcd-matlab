@@ -14,11 +14,19 @@ function   [pdf_max_x, x_max] = max_contact_probability_pure_translation(mu, Sig
 %   colliding with s1
 %   pdf_max_x: The probability of x_max
 
-% if flag
-%     x_max = s2.tc;
-%     pdf_max_x = mvnpdf(x_max, mu, Sigma);
-%     return
-% end
+%Check if s1 and s2 are sphere 
+s1objectType = getObjectType(s1);
+s2objectType = getObjectType(s2);
+ if strcmp(s1objectType, 'sphere')==0 && strcmp(s2objectType, 'sphere')==0
+    pdf_max_x = NaN;
+    error('Input objects are not sphere, unable to use PCD-maxpdf');
+end
+
+if collision_cfc(s1, s2)
+    x_max = s2.tc;
+    pdf_max_x = mvnpdf(x_max, mu, Sigma);
+    return
+end
 
 opt =  optimoptions("fsolve","OptimalityTolerance",1e-15);
 fun = @(lamda)norm((inv(Sigma) + lamda*eye(3))\(Sigma\mu + lamda*s1.tc) - s1.tc) - s1.a(1) - s2.a(1);

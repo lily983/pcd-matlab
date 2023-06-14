@@ -1,8 +1,12 @@
 function prob = exact_prob_translation(s1, s2, Sigma, N)
-%Calculate the MSC approximated exact probability
+%exact_prob_translation Calculate the MSC approximated exact probability
 
 %check dimension
 dimension = size(Sigma, 1);
+
+%Check if s1 and s2 are superquadric 
+s1objectType = getObjectType(s1);
+s2objectType = getObjectType(s2);
 
 prob = 0;
 
@@ -21,7 +25,7 @@ for i=1:N
     
     if dimension == 2
         %if s1 and s2 are sphere
-        if isequal(s1.eps, 1) && isequal(s2.eps, 1) && isequal(s1.a./s1.a(1), ones(1,2)) && isequal(s2.a./s2.a(1), ones(1,2))
+        if strcmp(s1objectType, 'sphere')==1 && strcmp(s2objectType, 'sphere')==1
             if norm(s1.tc - s3.tc) <= (s1.a(1)+s3.a(1))
                 prob = prob+1;
             end
@@ -32,15 +36,14 @@ for i=1:N
         end
     elseif dimension == 3
         %if s1 and s2 are sphere
-        if isequal(s1.eps, ones(1, 2)) && isequal(s2.eps, ones(1, 2)) && isequal(s1.a./s1.a(1), ones(1,3)) && isequal(s2.a./s2.a(1), ones(1,3))
+        if strcmp(s1objectType, 'sphere')==1 && strcmp(s2objectType, 'sphere')==1
             if norm(s1.tc - s3.tc) <= (s1.a(1)+s3.a(1))
                 prob = prob+1;
             end
         else
             [flag, ~, ~, condition] = collision_cfc(s1,s3);
-            if flag==1 && condition~=NaN
-                prob = prob+1;
-            elseif flag==1 && isnan(condition)
+%             check if it is an abnormal case by fix-point method
+            if isnan(condition)
                 [flag, ~, ~, condition] = collision_cfc(s1,s3, 'constrained');
                 if isnan(condition)
                     prob=NaN;
@@ -48,6 +51,8 @@ for i=1:N
                 elseif flag==1
                     prob=prob+1;
                 end
+            elseif flag==1
+                prob = prob+1;
             end
         end
     end

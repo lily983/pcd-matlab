@@ -19,43 +19,36 @@ function prob = getPCDR3(s1, s2, Sigmax, method)
 %   Outputs:
 %       prob probability of collision
 
-%Check if s1 and s2 are sphere or ellipsoid
-if isequal(s1.eps, ones(1, 2)) && isequal(s2.eps, ones(1, 2)) && isequal(s1.a./s1.a(1), ones(1,3)) && isequal(s2.a./s2.a(1), ones(1,3))
-    objectType='sphere';
-	if isequal(s1.eps, ones(1, 2)) && isequal(s2.eps, ones(1, 2))
-    objectType='ellipsoid';
-    end
-end
-
 switch method
     case 'PCD-exact'
         prob = exact_prob_translation(s1, s2, Sigmax, 1e+03);
     case 'PCD-maxpdf'
-        if strcmp(objectType, 'sphere')==0
-            warning('Input objects are not sphere, unable to use PCD-maxpdf');
-            prob = NaN;
-            return
-        end
         sphereVolume =  4*pi/3*(s1.a(1)+s2.a(1))^3 ;
-        maxpdf = max_contact_probability_pure_translation(s2.tc, Sigmax, s1, s2);
-        prob = sphereVolume*maxpdf;
+        try 
+            maxpdf = max_contact_probability_pure_translation(s2.tc, Sigmax, s1, s2);
+            prob = sphereVolume*maxpdf;
+        catch
+            prob = NaN;
+        end
     case 'PCD-convex'
-        prob = max_contact_probability_polyhedron_pure_translation(Sigmax, s1, s2);
+        try
+            prob = max_contact_probability_polyhedron_pure_translation(Sigmax, s1, s2);
+        catch 
+            prob = NaN;
+        end
     case 'PCD-SG'
-        if strcmp(objectType, 'ellipsoid')==0
-            warning('Input objects are not ellipsoid, unable to use PCD-SG');
-            prob = NaN;
-            return
-        end
         % Position error is assumed to follow N(x; 0, Sigmax)
-        prob = max_prob_single_gaussian(s1, s2, zeros(3,1), Sigmax);
-    case 'PCD-GMM'
-        if strcmp(objectType, 'ellipsoid')==0
-            warning('Input objects are not ellipsoid, unable to use PCD-GMM');
+        try
+            prob = max_prob_single_gaussian(s1, s2, zeros(3,1), Sigmax);
+        catch
             prob = NaN;
-            return
         end
-        prob = max_prob_gaussian_mixture(s1, s2, zeros(3,1), Sigmax);
+    case 'PCD-GMM'
+        try
+            prob = max_prob_gaussian_mixture(s1, s2, zeros(3,1), Sigmax);
+        catch
+            prob = NaN;
+        end
 end
 
 end
