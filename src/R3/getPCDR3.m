@@ -12,6 +12,8 @@ function prob = getPCDR3(s1, s2, Sigmax, method)
 %           for spherical objects
 %           'PCD-convex': Upper bound of PCD-exact using divergence theorm
 %           for convex objects
+%           'PCD-EB': Upper bound of  PCD-exact using enlarged bounding
+%           object to approximate s2
 %           'PCD-SG': Upper bound of PCD-exact using single Gaussian
 %           approximation for ellipsoids
 %           'PCD-GMM': Upper bound of PCD-exact using Gaussian mixture
@@ -36,6 +38,17 @@ switch method
         catch 
             prob = NaN;
         end
+    case 'PCD-EB'
+        %This method is first write for SE3 case. For simplification, I
+        %create the distribution for pose error which has exact rotation to
+        %represent the distribution for position error
+        try
+            muSE3 = [eye(3), s2.tc; 0, 0, 0, 1];
+            SigmaSE3 = zeros(6,6); SigmaSE3(4:6,4:6) = Sigmax;
+            prob = collision_enlarged_bounding_sq(s1, s2, muSE3, SigmaSE3);
+        catch 
+            prob = NaN;
+        end
     case 'PCD-SG'
         % Position error is assumed to follow N(x; 0, Sigmax)
         try
@@ -49,6 +62,11 @@ switch method
         catch
             prob = NaN;
         end
+end
+
+% truncate the probability to 1 if it is larger than 1
+if prob>1
+    prob=1;
 end
 
 end

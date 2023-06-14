@@ -22,7 +22,7 @@ s2objectType = getObjectType(s2);
     error('Input objects are not sphere, unable to use PCD-maxpdf');
 end
 
-if collision_cfc(s1, s2)
+if collision_cfc(s1, s2, 'constrained')
     x_max = s2.tc;
     pdf_max_x = mvnpdf(x_max, mu, Sigma);
     return
