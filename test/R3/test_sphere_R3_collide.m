@@ -1,6 +1,6 @@
 close all;clear;clc;
 
-N = 20;
+N = 1;
 sizeScale = 1;
 
 for i=1:N
@@ -30,7 +30,7 @@ for i=1:N
     v =  4*pi/3*(s1.a(1)+s2.a(1))^3 ;
     
     try
-       [pdf_max_x, x_max] = max_contact_probability_pure_translation(s2.tc, Sigma, s1, s2, flag);
+       [pdf_max_x, x_max] = max_contact_probability_pure_translation(s2.tc, Sigma, s1, s2);
         prob_max_x = v * pdf_max_x;
     catch
         prob_max_x = NaN;
@@ -61,18 +61,6 @@ for i=1:N
      catch
          prob_bounding_minksum_GM = NaN;
      end
-     
-     try 
-         prob_ellip_clipped_single_gaussian = max_prob_single_gaussian_clipped_integration(s1, s2, mu, Sigma);
-     catch
-         prob_ellip_clipped_single_gaussian = NaN;
-     end
-     
-     try 
-         prob_ellip_clipped_GM = max_prob_gaussian_mixture_clipped_integration(s1, s2, mu, Sigma);
-     catch
-         prob_ellip_clipped_GM = NaN;
-     end
     
     try
         exact_prob_x = exact_prob_translation(s1, s2, Sigma, 1e+03);
@@ -98,9 +86,6 @@ for i=1:N
     j=j+1; result(j:j+2, i) = s2.tc;
     j=j+3; result(j:j+3, i) =s2.q;
     
-    j=j+5; result(j, i) = prob_ellip_clipped_single_gaussian;
-    j=j+1; result(j, i) = prob_ellip_clipped_GM;
-
 end   
 
 %% Plot results
@@ -114,8 +99,7 @@ enlarged_bounding_sq = result(6,1:N);
 our_bound = result(7, 1:N);
 our_bound_GMM = result(8, 1:N);
 weighted_norm = result(9, 1:N);
-our_bound_EC = result(29, 1:N);
-our_bound_GMM_EC=result(30, 1:N);
+
 
 % 
 % for i=1:N
@@ -131,12 +115,6 @@ our_bound_GMM_EC=result(30, 1:N);
 %     if(our_bound(i)>1)
 %         our_bound(i)=1;
 %     end
-%     if(our_bound_GMM_EC(i)>1)
-%         our_bound_GMM_EC(i)=1;
-%     end
-%     if(our_bound_EC(i)>1)
-%         our_bound_EC(i)=1;
-%     end
 % end
 
 % %% sort by weighted norm
@@ -151,8 +129,6 @@ for i=1:N
     sort_x_max(i) = x_max(index(i));
     sort_convex_hull(i) = convex_hull(index(i));
     sort_enlarged_sq(i) = enlarged_bounding_sq(index(i));
-    sort_our_bound_EC(i) = our_bound_EC(index(i));
-    sort_our_bound_GMM_EC(i) = our_bound_GMM_EC(index(i));
 end
 
 %%
@@ -166,8 +142,6 @@ plot(1:N, sort_our_bound_GMM(1:N), 'b')
 % plot(1:N,  sort_norm(1:N), 'm');
 % plot(1:N, sort_flag(1:N),'c')
 % plot(1:N, ones(1, N),'y')
-plot(1:N, sort_our_bound_EC(1:N), 'g')
-plot(1:N, sort_our_bound_GMM_EC(1:N), 'y')
 
 %% 
 figure; hold on;
