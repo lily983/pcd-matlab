@@ -2,7 +2,7 @@ clc; clear; close all;
 add_path()
 
 sizeScale = 1;
-sampleNumber = 50;
+sampleNumber = 10;
 
 %% Generate 50 random samples for spheres with size range (1, 10)
 resultsSphere = getResultsR3(sizeScale, sampleNumber, 'sphere');
