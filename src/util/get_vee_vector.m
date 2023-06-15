@@ -11,7 +11,8 @@ theta = acos((trace(G(1:3,1:3))-1)/2);
 
 if isreal(theta) == 0
     warning("Rotation angle is a complex number in function get_vee_vector()");
-elseif theta<1e-10
+elseif theta==0
+%         warning("Rotation is an indentity matrix");
         R_head_vector = zeros(3,1);
         x = zeros(6,1);
         x(1:3,1) = R_head_vector;
