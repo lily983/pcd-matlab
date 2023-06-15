@@ -32,17 +32,17 @@ plot(firstIndex*ones(size(verticalLine1)), verticalLine1, 'Color', hex2rgb('073b
 horizontalLine1 = prob * ones(1, secondIndex);
 plot(1:secondIndex, horizontalLine1, 'Color', hex2rgb('073b4c')./255);
 
-verticalLine2 = linspace(prob, 1, 100);
-plot(secondIndex*ones(size(verticalLine1)), verticalLine2, 'Color', hex2rgb('073b4c')./255);
+verticalLine = linspace(prob, 1, 100);
+plot(secondIndex*ones(size(verticalLine1)), vertical_line2, 'Color', hex2rgb('073b4c')./255);
 
-horizontalLine2 = prob2 * ones(1, secondIndex);
-plot(1:secondIndex, horizontalLine2, 'Color', hex2rgb('073b4c')./255, 'LineStyle',":", 'LineWidth', 2);
+horizontal_line2 = prob2 * ones(1, secondIndex);
+plot(1:secondIndex, horizontal_line2, 'Color', hex2rgb('073b4c')./255, 'LineStyle',":", 'LineWidth', 2);
 
-hotizontalLine3 = prob * ones(1, arraySize-secondIndex+1);
-plot(secondIndex:arraySize, hotizontalLine3, 'Color', hex2rgb('073b4c')./255, 'LineStyle',":", 'LineWidth', 2);
+horizontal_line3 = prob * ones(1, arraySize-secondIndex+1);
+plot(secondIndex:arraySize, horizontal_line3, 'Color', hex2rgb('073b4c')./255, 'LineStyle',":", 'LineWidth', 2);
 
-horizontalLine4 = prob2 * ones(1, arraySize-secondIndex+1);
-plot(secondIndex:arraySize, horizontalLine4, 'Color', hex2rgb('073b4c')./255, 'LineStyle',":", 'LineWidth', 2);
+horizontal_line4 = prob2 * ones(1, arraySize-secondIndex+1);
+plot(secondIndex:arraySize, horizontal_line4, 'Color', hex2rgb('073b4c')./255, 'LineStyle',":", 'LineWidth', 2);
 
 yticks(sort([0 0.2 0.4 0.6 0.8 1.0 prob  prob2], 2))
 ylim([0 1])
