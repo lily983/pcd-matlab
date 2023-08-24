@@ -41,17 +41,7 @@ for i=1:N
                 prob = prob+1;
             end
         else
-            [flag, ~, ~, condition] = collision_cfc(s1,s3);
-%             check if it is an abnormal case by fix-point method
-            if isnan(condition)
-                [flag, ~, ~, condition] = collision_cfc(s1,s3, 'constrained');
-                if isnan(condition)
-                    prob=NaN;
-                    break
-                elseif flag==1
-                    prob=prob+1;
-                end
-            elseif flag==1
+            if collision_ellipsoid_asc(s1, s3)
                 prob = prob+1;
             end
         end
