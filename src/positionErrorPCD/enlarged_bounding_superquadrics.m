@@ -192,8 +192,8 @@ end
 
 %convex hull
 k = convhull(points');
-sq_patch = trisurf(k,points(1,:)',points(2,:)',points(3,:)','Visible','off'); 
-% sq_patch = patch(k, [points(1,:)',points(2,:)',points(3,:)'],'Visible','off'); 
+% sq_patch = trisurf(k,points(1,:)',points(2,:)',points(3,:)','Visible','on', 'FaceAlpha', 0.5); 
+sq_patch = trisurf(k,points(1,:)',points(2,:)',points(3,:)','Visible','off');
 
 surf_points1(:,:) = [sq_patch.XData(1,:)', sq_patch.YData(1,:)', sq_patch.ZData(1,:)'];
 surf_points2(:,:) = [sq_patch.XData(2,:)', sq_patch.YData(2,:)', sq_patch.ZData(2,:)'];

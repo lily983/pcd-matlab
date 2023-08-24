@@ -153,8 +153,8 @@ vee(:,64) = [mu(1)-deviation(1); mu(2)-deviation(2); mu(3)-deviation(3); mu(4)-d
 % Get surface points of s2 at each 64 extreme configurations
 points = zeros(3, 20*20*64);
 
-% figure; hold on;
-% s3.PlotShape('r', 0.2);
+figure; hold on;
+s3.PlotShape('r', 0.2);
 
 for i=1:64
     
@@ -164,8 +164,8 @@ for i=1:64
     if norm(deviation(1:3,1)-zeros(3,1))>1e-04
         s3.q = rotm2quat(g_matrix(1:3,1:3));
     end
-%     s3.PlotShape('r',0.05)
-%     pause(0.2);
+    s3.PlotShape('r',0.05)
+    pause(0.2);
     
     start = 1+(i-1)*400;
     last = 400+(i-1)*400;
@@ -193,6 +193,7 @@ surf_points2(:,:) = [sq_patch.XData(2,:)', sq_patch.YData(2,:)', sq_patch.ZData(
 surf_points3(:,:) = [sq_patch.XData(3,:)', sq_patch.YData(3,:)', sq_patch.ZData(3,:)'];
 surf_points(:,:) = [surf_points1(:,:); surf_points2(:,:); surf_points3(:,:)];
 
+s4 = SuperQuadrics({s2.a+3})
 
 % Test if points are on the surface of convex hull
 % surf_points = inpolyhedron(sq_patch.Faces(), sq_patch.Vertices(), points(:,:)', 'TOL', 1e-07)
