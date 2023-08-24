@@ -11,6 +11,9 @@ function prob = max_contact_probability_polyhedron_pure_translation(Sigma, s1, s
 
 prob = 0;
 
+% Surface points
+SN = s1.N;
+
 m1 = s1.GetGradientsCanonical();
 mink = MinkSumClosedForm(s1,s2,quat2rotm(s1.q),quat2rotm(s2.q));
 x_mink = mink.GetMinkSumFromGradient(m1)+s1.tc;
@@ -25,9 +28,9 @@ mink_points(:,1) = mink_points(:,1) - shift(1,1);
 mink_points(:,2) = mink_points(:,2) - shift(2,1);
 mink_points(:,3) = mink_points(:,3) - shift(3,1);
 
-X_ = reshape(mink_points(:,1), [20,20]); 
-Y_= reshape(mink_points(:,2),  [20,20]); 
-Z_ = reshape(mink_points(:,3),  [20,20]); 
+X_ = reshape(mink_points(:,1), SN); 
+Y_= reshape(mink_points(:,2),  SN); 
+Z_ = reshape(mink_points(:,3),  SN); 
 
 patch_mink = surf2patch(X_,Y_,Z_, 'triangles');
 %patch(patch_mink, 'FaceAlpha', 0.3)
@@ -42,8 +45,8 @@ s2_points(:,1) = s2_points(:,1) - shift(1,1);
 s2_points(:,2) = s2_points(:,2) - shift(2,1);
 s2_points(:,3) = s2_points(:,3) - shift(3,1);
 
-patch_s1 = surf2patch(reshape(s1_points(:,1), [20,20]), reshape(s1_points(:,2), [20,20]), reshape(s1_points(:,3), [20,20]), 'triangles');
-patch_s2 = surf2patch(reshape(s2_points(:,1), [20,20]), reshape(s2_points(:,2), [20,20]), reshape(s2_points(:,3), [20,20]), 'triangles');
+patch_s1 = surf2patch(reshape(s1_points(:,1), SN), reshape(s1_points(:,2), SN), reshape(s1_points(:,3), SN), 'triangles');
+patch_s2 = surf2patch(reshape(s2_points(:,1), SN), reshape(s2_points(:,2), SN), reshape(s2_points(:,3), SN), 'triangles');
 
 [dist,pts,G,H] = GJK_dist(patch_s1, patch_s2);
 
