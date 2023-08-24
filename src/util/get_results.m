@@ -19,3 +19,4 @@ if is_collision; dist = -dist; end
 % normal
 t_s1s2 = pt_cls.s2 - pt_cls.s1;
 condition = norm(cross(normal, t_s1s2));
+end
