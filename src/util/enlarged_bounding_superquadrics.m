@@ -1,12 +1,19 @@
-function s3 = enlarged_bounding_superquadrics(s2, Mu, Sigma)
+function s3 = enlarged_bounding_superquadrics(s2, Mu, Sigma, confidenceLevel)
 % enlarged_superquadrics_contact_probability This function computes an
 % enlarged bounding convex hull of s2 under pose error
 % Every variables in the vee vector in se(3) range in mu+/-3*sqrt(sigma)
-% when confidence interval is 99%
+% when confidence interval is 99% (3*sigma), 95% (2*sigma)
 
 s3 = SuperQuadrics({s2.a, s2.eps, s2.taper, s2.tc, s2.q, s2.N});
 
 mu = get_vee_vector(Mu);
+
+switch confidenceLevel
+    case '99'
+        CL=3.0;
+    case '95'
+        CL=2.0;
+end
 
 % Get devication 
 k=1;
@@ -14,7 +21,7 @@ deviation = zeros(6,1);
 for i=1:6
     for j=1:6
         if i== j
-            deviation(k) = sqrt(Sigma(i,i))*3;
+            deviation(k) = sqrt(Sigma(i,i))*CL;
             k = k+1;
         end
     end
@@ -151,10 +158,10 @@ vee(:,63) = [mu(1)-deviation(1); mu(2)-deviation(2); mu(3)-deviation(3); mu(4)-d
 vee(:,64) = [mu(1)-deviation(1); mu(2)-deviation(2); mu(3)-deviation(3); mu(4)-deviation(4); mu(5)-deviation(5); mu(6)-deviation(6)];
 
 % Get surface points of s2 at each 64 extreme configurations
-points = zeros(3, 20*20*64);
+points = zeros(3, s2.N(1)*s2.N(2)*64);
 
-figure; hold on;
-s3.PlotShape('r', 0.2);
+% figure; hold on;
+% s3.PlotShape('r', 0.2);
 
 for i=1:64
     
@@ -164,11 +171,11 @@ for i=1:64
     if norm(deviation(1:3,1)-zeros(3,1))>1e-04
         s3.q = rotm2quat(g_matrix(1:3,1:3));
     end
-    s3.PlotShape('r',0.05)
-    pause(0.2);
+%     s3.PlotShape('r',0.05)
+%     pause(0.2);
     
-    start = 1+(i-1)*400;
-    last = 400+(i-1)*400;
+    start = 1+(i-1)*s2.N(1)*s2.N(2);
+    last = s2.N(1)*s2.N(2)+(i-1)*s2.N(1)*s2.N(2);
     
     points(:,start:last) = s3.GetPoints();
 end
@@ -185,15 +192,14 @@ end
 
 %convex hull
 k = convhull(points');
-sq_patch = trisurf(k,points(1,:)',points(2,:)',points(3,:)');
-% sq_patch = patch('faces',k,'vertices',[points(1,:)',points(2,:)',points(3,:)']);
+% sq_patch = trisurf(k,points(1,:)',points(2,:)',points(3,:)','Visible','on', 'FaceAlpha', 0.5); 
+sq_patch = trisurf(k,points(1,:)',points(2,:)',points(3,:)','Visible','off');
 
 surf_points1(:,:) = [sq_patch.XData(1,:)', sq_patch.YData(1,:)', sq_patch.ZData(1,:)'];
 surf_points2(:,:) = [sq_patch.XData(2,:)', sq_patch.YData(2,:)', sq_patch.ZData(2,:)'];
 surf_points3(:,:) = [sq_patch.XData(3,:)', sq_patch.YData(3,:)', sq_patch.ZData(3,:)'];
 surf_points(:,:) = [surf_points1(:,:); surf_points2(:,:); surf_points3(:,:)];
 
-s4 = SuperQuadrics({s2.a+3})
 
 % Test if points are on the surface of convex hull
 % surf_points = inpolyhedron(sq_patch.Faces(), sq_patch.Vertices(), points(:,:)', 'TOL', 1e-07)
