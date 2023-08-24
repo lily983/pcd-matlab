@@ -707,7 +707,7 @@ classdef SuperQuadrics < handle
             
             [x, y, z] = obj.GetSurfPoints();
             
-            surf(x, y, z, 'FaceColor', color, 'EdgeColor', 'none',...
+            surf(x, y, z, 'FaceColor', color, 'EdgeColor', color,...
                 'FaceAlpha', faceAlpha);
         end
         

@@ -318,7 +318,7 @@ classdef SuperEllipse < handle
             end
             
             xy = obj.GetPoints();
-            patch(xy(1,:), xy(2,:), color, 'FaceAlpha', faceAlpha);
+            patch(xy(1,:), xy(2,:), color, 'FaceAlpha', faceAlpha, 'EdgeColor', 'none');
         end
         
         %% Generate almost equally spaced parameters
