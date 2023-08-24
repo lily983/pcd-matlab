@@ -1,13 +1,20 @@
 clc; clear; close all;
-add_path()
+% add_path()
 
-sizeScale = 1;
-sampleNumber = 10;
+sampleNumber = 50;
 
-%% Generate 50 random samples for spheres with size range (1, 10)
-resultsSphere = getResultsR3(sizeScale, sampleNumber, 'sphere');
+% Choose the position error distribution: sparse or concentrate
+distribution = 'concentrate';
+% distribution = 'sparse';
+
+%% Generate sampleNumber random samples for spheres
+Sigma = positionErrorDistribution('sphere', distribution);
+resultsSphere = getResultsR3(sampleNumber, 'sphere', Sigma);
 visualizeResults(resultsSphere, 'sphere');
 
-%% Generate 50 random samples for ellipsoid with size range (1, 10)
-resultsEllip = getResultsR3(sizeScale, sampleNumber, 'ellip');
-visualizeResults(resultsEllip, 'ellip');
+%% Generate sampleNumber random samples for ellipsoids
+Sigma = positionErrorDistribution('ellipsoid', distribution);
+resultsEllip = getResultsR3(sampleNumber, 'ellipsoid', Sigma);
+visualizeResults(resultsEllip, 'ellipsoid');
+
+
