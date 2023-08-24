@@ -1,12 +1,19 @@
-function s3 = enlarged_bounding_superquadrics(s2, Mu, Sigma)
+function s3 = enlarged_bounding_superquadrics(s2, Mu, Sigma, confidenceLevel)
 % enlarged_superquadrics_contact_probability This function computes an
 % enlarged bounding convex hull of s2 under pose error
 % Every variables in the vee vector in se(3) range in mu+/-3*sqrt(sigma)
-% when confidence interval is 99%
+% when confidence interval is 99% (3*sigma), 95% (2*sigma)
 
 s3 = SuperQuadrics({s2.a, s2.eps, s2.taper, s2.tc, s2.q, s2.N});
 
 mu = get_vee_vector(Mu);
+
+switch confidenceLevel
+    case '99'
+        CL=3.0;
+    case '95'
+        CL=2.0;
+end
 
 % Get devication 
 k=1;
@@ -14,7 +21,7 @@ deviation = zeros(6,1);
 for i=1:6
     for j=1:6
         if i== j
-            deviation(k) = sqrt(Sigma(i,i))*3;
+            deviation(k) = sqrt(Sigma(i,i))*CL;
             k = k+1;
         end
     end
@@ -151,7 +158,7 @@ vee(:,63) = [mu(1)-deviation(1); mu(2)-deviation(2); mu(3)-deviation(3); mu(4)-d
 vee(:,64) = [mu(1)-deviation(1); mu(2)-deviation(2); mu(3)-deviation(3); mu(4)-deviation(4); mu(5)-deviation(5); mu(6)-deviation(6)];
 
 % Get surface points of s2 at each 64 extreme configurations
-points = zeros(3, 20*20*64);
+points = zeros(3, s2.N(1)*s2.N(2)*64);
 
 % figure; hold on;
 % s3.PlotShape('r', 0.2);
@@ -167,8 +174,8 @@ for i=1:64
 %     s3.PlotShape('r',0.05)
 %     pause(0.2);
     
-    start = 1+(i-1)*400;
-    last = 400+(i-1)*400;
+    start = 1+(i-1)*s2.N(1)*s2.N(2);
+    last = s2.N(1)*s2.N(2)+(i-1)*s2.N(1)*s2.N(2);
     
     points(:,start:last) = s3.GetPoints();
 end

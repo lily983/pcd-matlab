@@ -1,5 +1,5 @@
 function visualize_position_error(s1, s2, Sigma)
-    n = 100;
+    n = 20;
     
     dimension = size(Sigma,1);
     
@@ -12,13 +12,14 @@ function visualize_position_error(s1, s2, Sigma)
         s3 = SuperQuadrics({s2.a, s2.eps, s2.taper, s2.tc, s2.q, s2.N});
     end
 
-%     figure; hold on;
-%     s3.PlotShape('r', 0.1);
-%     s1.PlotShape('g', 0.3);
+    figure; hold on;axis equal;axis off
+    s3.PlotShape('r', 0.4);
+    s1.PlotShape('b', 0.3);
 
     for i = 1:size(xi_rand, 1)
         s3.tc = s2.tc + xi_rand(i,:)';
-        s3.PlotShape(hex2rgb('ffd166')./255, 0.05);
+        s3.PlotShape(hex2rgb('45AC59'), 0.1);
+%         pause(0.5)
     end
     
 end

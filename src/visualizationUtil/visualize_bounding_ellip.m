@@ -1,7 +1,12 @@
-function visualize_bounding_ellip(s1, s2, Sigmax)
+function visualize_bounding_ellip(s1, s2)
 % Plot the minkowski sum of s1 and s2 and the bounding ellip of the
 % minkowski sum
+
 [mf, Sigmaf] = get_bounding_ellip(s1, s2);
+
+% [mf, Sigmaf] = get_bounding_ellip_fixed_point(s1, s2);
+
+det(Sigmaf)
 
 % invT = inv(Sigmaf)+inv(Sigmax);
 % % M = 1/det(T).*T;
@@ -29,13 +34,13 @@ dimension = size(Sigmaf,1);
         pgon2= polyshape(s2Points(:,1), s2Points(:,2));
         mSum = minkowskiSum(pgon1, pgon2);
         
-        figure; hold on;
-        s1.PlotShape(hex2rgb('118ab2')./255, 0.4);
-        s2.PlotShape(hex2rgb('06d6a0')./255, 0.4);
-        s3.PlotShape(hex2rgb('ef476f ')./255, 0.2);
-        pause(1)
-        patch(mSum.Vertices(:,1), mSum.Vertices(:,2), 'FaceColor', hex2rgb('ffd166 ')./255, 'FaceAlpha', 0.2);
-        
+%         figure; hold on;axis equal; axis off;
+        patch(mSum.Vertices(:,1), mSum.Vertices(:,2), hex2rgb('CE2836'), 'FaceAlpha', 0.2, 'EdgeColor',...
+            hex2rgb('CE2836'), 'LineWidth', 2, 'LineStyle', '--');
+%         s1.PlotShape(hex2rgb('4FAAD1'), 0.6);
+%         s2.PlotShape(hex2rgb('45AC59'), 0.6);
+%         s3.PlotShape(hex2rgb('EBBF00 '), 0.7);
+
     elseif dimension ==3
         s3 = SuperQuadrics({s2.a, s2.eps, [0, 0]...
             s2.tc, s2.q, s2.N});
@@ -48,14 +53,16 @@ dimension = size(Sigmaf,1);
 %         mu_m = T* inv(Sigmaf) * mf ;
 %         s3.tc = mu_m;
         
-         figure; hold on;axis equal;axis off;
-        s1.PlotShape(hex2rgb('06d6a0')./255, 1);
-        s2.PlotShape(hex2rgb('ffd166')./255, 1);
-        s3.PlotShape(hex2rgb('ef476f ')./255, 0.3);
+        figure; hold on;axis equal;
+        s1.PlotShape(hex2rgb('4FAAD1'), 0.7);
+        s2.PlotShape(hex2rgb('45AC59'), 0.7);
+        s3.PlotShape(hex2rgb('EBBF00 '), 0.7);
         patch_mink = surf2patch(reshape(x_mink(1,:), [20,20]), reshape(x_mink(2, :), [20,20]), reshape(x_mink(3, :), [20,20]), 'triangles');
-        patch_mink.FaceColor = hex2rgb('ffd166 ')./255;
-        patch_mink.FaceAlpha = 0.5;
-        patch_mink.EdgeAlpha = 0.05;
+        patch_mink.FaceColor = hex2rgb('CE2836 ');
+        patch_mink.FaceAlpha = 0.01;
+        patch_mink.EdgeColor = hex2rgb('CE2836');
+        patch_mink.LineWidth = 1;
+        patch_mink.LineStyle = '--';
         patch(patch_mink);
         
     end

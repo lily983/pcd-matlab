@@ -7,11 +7,21 @@ function visualizeResults(results, objectType)
 
 % create a map container, keySet is the name of PCD-methods, value set is
 % the color and data array 
-keySet = {'PCD-exact', 'PCD-maxpdf', 'PCD-convex', 'PCD-EB', 'PCD-SG', 'PCD-GMM'};
-colorSet = {hex2rgb('45498C')./255, hex2rgb('EE6B31')./255, hex2rgb('45AC59')./255,...
-    hex2rgb('EBBF00')./255, hex2rgb('CE2836')./255, hex2rgb('4FAAD1')./255}
+keySet = {'PCD-exact', 'PCD-maxpdf', 'PCD-convex', ...
+    'PCD-EB-99', 'PCD-GMM-2SG', 'PCD-GMM-4SG', ...
+    'PCD-GMM-5SG', 'PCD-EB-95', 'PCD-ellip-exact',...
+    'PCD-ellip-bound'};
+
+colorSet = {hex2rgb('45498C'), hex2rgb('EE6B31'), hex2rgb('45AC59'),...
+    hex2rgb('EBBF00'), hex2rgb('4FAAD1'), hex2rgb('CE2836'), ...
+    hex2rgb('9f45b0'), hex2rgb('98646b'), hex2rgb('b5a642'), ...
+    hex2rgb('E6A9CC')};
+
 dataSet = {results.PCDExactArray, results.PCDMaxpdfArray, results.PCDConvexArray,...
-    results.PCDEBArray, results.PCDSGArray, results.PCDGMMArray};
+    results.PCDEB99Array, results.PCDGMM2SGArray, results.PCDGMM4SGArray, ...
+    results.PCDGMM5SGArray, results.PCDEB95Array, results.PCDEllipExactArray,...
+    results.PCDEllipBoundArray};
+
 colorMap = containers.Map(keySet, colorSet);
 dataMap = containers.Map(keySet, dataSet);
 
@@ -24,7 +34,7 @@ end
 %% First plot data point and then plot fitting curve
 dataNumber = size(results.PCDExactArray,2);
 xIndex = 1:1:dataNumber;
-markerAlpha = 0.4;
+markerAlpha = 0.5;
 markerSize = 30;
 
 figure; hold on;
@@ -46,7 +56,13 @@ for iMethod=1:dataMap.Count
          'MarkerFaceColor', currentDataColor,...
          'MarkerFaceAlpha',markerAlpha,...
          'MarkerEdgeAlpha', 0.0);
+     
+     if strcmp(keySet{iMethod}, 'PCD-EB-99') || strcmp(keySet{iMethod}, 'PCD-EB-95')...
+             || strcmp(keySet{iMethod}, 'PCD-ellip-exact')
+         continue;
+     end
     visualizeDataFittingResult(currentDataArray, currentDataColor);
 end
+plot(xIndex,0.05*ones(dataNumber),'--');
 hold off;
 end

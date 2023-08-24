@@ -1,52 +1,56 @@
-function results = getResultsR3(sizeScale, sampleNumber, objectType)
+function results = getResultsR3(sampleNumber, objectType, Sigmax, sizeScale)
 % getResultsR3 Generate random objects s1 and s2 and return PCD value
 % generate by different methods
 %
 % Inputs
-%     sizeScale                 object size scale. If sizeScale=1, object
-%     size range from (1, 10)
+%     sizeScale                 object size scale
 %     sampleNumber      number of random samples
-%     objectType              object is sphere or ellipsoid.
+%     objectType              object is sphere or ellipsoid
 %
 % Outputs
 %     results                           struct array variables, including
 %     collision status and PCD results by each methos
 
+% Set default sizeScale to 0.1, object's size range from [0.1, 1)
+if nargin == 3
+    sizeScale = 0.1;
+end
+
 for iSample=1:sampleNumber
     %     Generate objects with random size, position, quaternion
     if strcmp(objectType, 'sphere')
         s1 = SuperQuadrics({(rand(1)+1)*1*sizeScale*ones(1,3), [1,1], [0, 0]...
-            rand(3,1)*0.3*sizeScale, getRandomQuaternion(), [20, 20]});
+            rand(3,1)*0.3*sizeScale, getRandomQuaternion(), [10, 10]});
         s2 = SuperQuadrics({(rand(1)+1)*1*sizeScale*ones(1,3),  [1,1], [0, 0]...
-            rand(3,1)*3.6*sizeScale, getRandomQuaternion(),[20,20]});
-    elseif strcmp(objectType, 'ellip')
+            rand(3,1)*3.6*sizeScale, getRandomQuaternion(),[10, 10]});
+    elseif strcmp(objectType, 'ellipsoid')
         s1 = SuperQuadrics({(rand(1,3)+0.1)*10*sizeScale, [1,1], [0, 0]...
-            rand(3,1)*sizeScale, getRandomQuaternion(), [20, 20]});
+            rand(3,1)*sizeScale, getRandomQuaternion(), [10, 10]});
         s2 = SuperQuadrics({(rand(1,3)+0.1)*10*sizeScale,  [1,1], [0, 0]...
-            (rand(3,1)+0.3)*10*sizeScale, getRandomQuaternion(),[20,20]});
+            (rand(3,1)+0.3)*10*sizeScale, getRandomQuaternion(),[10, 10]});
     else
         error('Input object type must be sphere or ellipsoid!');
     end
     
     [flag, dist, ~, ~] = collision_cfc(s1,s2, 'constrained');
     
-    %     Covariance matrix of the position error distribution
-    Sigmax = zeros(3);
-    Sigmax(1,1) = 8.0000e-00;
-    Sigmax(2,2) = 8.0000e-00;
-    Sigmax(3,3) = 8.0000e-00;
-    Sigmax = Sigmax.*0.01*sizeScale^2;
-    
     flagArray(iSample) = round(flag);
     distArray(iSample) = dist;
     
     %     Get PCD values of each methods
-    PCDExactArray(iSample) = getPCDR3(s1, s2, Sigmax, 'PCD-exact');
-    PCDConvexArray(iSample) =  getPCDR3(s1, s2, Sigmax, 'PCD-convex');
-    PCDEBArray(iSample) = getPCDR3(s1, s2, Sigmax, 'PCD-EB');
-    PCDMaxpdfArray(iSample) = getPCDR3(s1, s2, Sigmax, 'PCD-maxpdf');
-    PCDSGArray(iSample) = getPCDR3(s1, s2, Sigmax, 'PCD-SG');
-    PCDGMMArray(iSample) = getPCDR3(s1, s2, Sigmax, 'PCD-GMM');
+    [PCDExactArray(iSample), exactT(iSample)] = getPCDR3(s1, s2, Sigmax, 'PCD-exact');
+    [PCDConvexArray(iSample), convexT(iSample)]  =  getPCDR3(s1, s2, Sigmax, 'PCD-convex');
+    [PCDEB99Array(iSample), EB99T(iSample)]  = getPCDR3(s1, s2, Sigmax, 'PCD-EB-99');
+    [PCDEB95Array(iSample), EB95T(iSample)]  = getPCDR3(s1, s2, Sigmax, 'PCD-EB-95');
+    [PCDMaxpdfArray(iSample), maxpdfT(iSample)]  = getPCDR3(s1, s2, Sigmax, 'PCD-maxpdf');
+    [PCDGMM2SGArray(iSample), GMM2SGT(iSample)]  = getPCDR3(s1, s2, Sigmax, 'PCD-GMM-2SG');
+    [PCDGMM4SGArray(iSample), GMM4SGT(iSample)]  = getPCDR3(s1, s2, Sigmax, 'PCD-GMM-4SG');
+    [PCDGMM5SGArray(iSample), GMM5SGT(iSample)]  = getPCDR3(s1, s2, Sigmax, 'PCD-GMM-5SG');
+    [PCDEllipExact(iSample), EllipExactT(iSample)]  = getPCDR3(s1, s2, Sigmax, 'PCD-ellip-exact');
+    [PCDEllipBound(iSample), EllipBoundT(iSample)]  = getPCDR3(s1, s2, Sigmax, 'PCD-ellip-bound');
+    
+    s1Array(:,iSample) = [s1.a, s1.q, s1.tc'];
+    s2Array(:,iSample) = [s2.a, s2.q, s2.tc'];
 end
 
 %sort data by PCD-exact in ascent way and store sorted data in a struct
@@ -55,8 +59,24 @@ end
 results.flagArray = flagArray(index);
 results.distArray = distArray(index);
 results.PCDConvexArray = PCDConvexArray(index);
-results.PCDEBArray = PCDEBArray(index);
+results.PCDEB99Array = PCDEB99Array(index);
+results.PCDEB95Array = PCDEB95Array(index);
 results.PCDMaxpdfArray = PCDMaxpdfArray(index);
-results.PCDSGArray = PCDSGArray(index);
-results.PCDGMMArray = PCDGMMArray(index);
+results.PCDGMM2SGArray = PCDGMM2SGArray(index);
+results.PCDGMM4SGArray = PCDGMM4SGArray(index);
+results.PCDGMM5SGArray = PCDGMM5SGArray(index);
+results.PCDEllipExactArray = PCDEllipExact(index);
+results.PCDEllipBoundArray = PCDEllipBound(index);
+% Computation time
+results.exactT = exactT;
+results.convexT = convexT;
+results.EBT = EB99T;
+results.maxpdfT = maxpdfT;
+results.GMM2SGT = GMM2SGT;
+results.GMM5SGT = GMM5SGT;
+results.EllipExactT = EllipExactT;
+results.EllipBoundT = EllipBoundT;
+% s1 s2 Information
+results.s1Array = s1Array(:, index);
+results.s2Array = s2Array(:, index);
 end
