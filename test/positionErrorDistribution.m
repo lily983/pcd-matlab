@@ -1,7 +1,7 @@
 function Sigma = positionErrorDistribution(objectType, distribution)
 
 if nargin==1
-    distribution='sparse';
+    distribution='large';
 end
 
 Sigma = zeros(3);
@@ -10,9 +10,9 @@ Sigma(2,2) = 8.0000e-00;
 Sigma(3,3) = 9.0000e-00;
 
 switch distribution
-    case 'concentrate'
+    case 'small'
         sizeScale = 8e-04;
-    case 'sparse'
+    case 'large'
         sizeScale = 3e-03;
 end
 

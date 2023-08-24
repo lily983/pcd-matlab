@@ -4,8 +4,8 @@ clc; clear; close all;
 sampleNumber = 50;
 
 % Choose the position error distribution: sparse or concentrate
-distribution = 'concentrate';
-% distribution = 'sparse';
+distribution = 'small';
+% distribution = 'large';
 
 %% Generate sampleNumber random samples for spheres
 Sigma = positionErrorDistribution('sphere', distribution);
