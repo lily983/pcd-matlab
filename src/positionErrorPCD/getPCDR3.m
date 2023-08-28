@@ -94,7 +94,7 @@ switch method
         % Position error is assumed to follow N(x; 0, Sigmax)
         tic;
         try
-            prob = max_prob_gaussian_mixture(s1, s2, zeros(3,1), Sigmax, 'accurate-result', '2SG');
+            prob = max_prob_gaussian_mixture(s1, s2, zeros(3,1), Sigmax, 'fast-computation', '2SG');
         catch
             prob = NaN;
         end
@@ -102,7 +102,7 @@ switch method
     case 'PCD-GMM-4SG'
         tic;
         try
-            prob = max_prob_gaussian_mixture(s1, s2, zeros(3,1), Sigmax, 'accurate-result', '4SG');
+            prob = max_prob_gaussian_mixture(s1, s2, zeros(3,1), Sigmax, 'fast-computation', '4SG');
         catch
             prob = NaN;
         end
@@ -110,7 +110,7 @@ switch method
     case 'PCD-GMM-5SG'
         tic;
         try
-            prob = max_prob_gaussian_mixture(s1, s2, zeros(3,1), Sigmax, 'accurate-result', '5SG');
+            prob = max_prob_gaussian_mixture(s1, s2, zeros(3,1), Sigmax, 'fast-computation', '5SG');
         catch
             prob = NaN;
         end
