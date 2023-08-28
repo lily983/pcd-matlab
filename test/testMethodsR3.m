@@ -3,7 +3,7 @@ clc; clear; close all;
 
 sampleNumber = 50;
 
-% Choose the position error distribution: sparse or concentrate
+%% Choose the position error distribution: sparse or concentrate
 distribution = 'small';
 % distribution = 'large';
 
