@@ -1,4 +1,4 @@
-function enlarged_SQ_csv = csv2EnlargedSQ(csv, distribution, CL)
+function csvstring = csv2EnlargedSQ(csv, distribution, CL)
 %CL: confidence level('95', '99')
 
 if nargin <3
@@ -31,9 +31,16 @@ enlarged_SQ_csv(1, 9:11) = enlarged_SQ_axang(1,1:3);
 enlarged_SQ_csv(1, 12) = enlarged_SQ_axang(1,4);
 
 % visualization
-figure; hold on; 
-axis equal;
+figure; hold on; axis equal;
 sq.PlotShape('r', 0.6);
 enlarged_SQ.PlotShape('b', 0.3);
+visualize_position_error(sq, sq, Sigma(4:6, 4:6));
+
+%print out csv file
+csvstring="";
+for i=1:size(enlarged_SQ_csv,2)
+    csvstring=csvstring+string(enlarged_SQ_csv(i));
+    csvstring = csvstring+",";
+end
 
 end
