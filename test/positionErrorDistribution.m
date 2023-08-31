@@ -13,7 +13,7 @@ switch distribution
     case 'small'
         sizeScale = 3e-05;
     case 'large'
-        sizeScale = 5e-04;
+        sizeScale = 2e-04;
 end
 
 if strcmp(objectType, 'sphere')
