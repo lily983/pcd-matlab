@@ -11,9 +11,9 @@ Sigma(3,3) = 9.0000e-00;
 
 switch distribution
     case 'small'
-        sizeScale = 3e-05;
+        sizeScale = 4e-04;
     case 'large'
-        sizeScale = 2e-04;
+        sizeScale = 2e-03;
 end
 
 if strcmp(objectType, 'sphere')
