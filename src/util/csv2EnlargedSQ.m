@@ -18,7 +18,19 @@ sq = SuperQuadrics({csv(1, 1:3), [csv(4), csv(5)], [0,0],...
 % enlarged SQ
 Mu = [eye(3), sq.tc; 0, 0, 0, 1];
 Sigma = zeros(6,6);
-Sigma(4:6, 4:6) = positionErrorDistribution('ellipsoid', distribution);
+Sigma(4:6, 4:6) = eye(3,3);
+
+% position error covariance
+if distribution=="large"
+    Sigma(4,4)=1.6e-03;
+    Sigma(5,5)=1.4e-03;
+    Sigma(6,6)=1.8e-03;
+elseif distribution=="small"
+    Sigma(4,4)=2.1e-04;
+    Sigma(5,5)=2.4e-04;
+    Sigma(6,6)=2.7e-04;
+end
+
 enlarged_SQ = enlarged_bounding_superquadrics(sq, Mu, Sigma, CL);
 
 enlarged_SQ_csv(1, 1:3) = enlarged_SQ.a;
