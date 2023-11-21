@@ -299,7 +299,7 @@ classdef SuperEllipse < handle
         end
         
         %% Plot superelliptical shape
-        function PlotShape(obj, color, faceAlpha)
+        function PlotShape(obj, color, faceAlpha, edgeAlpha)
             % PlotShape Plot the superellipse shape
             %
             %  Inputs:
@@ -318,7 +318,7 @@ classdef SuperEllipse < handle
             end
             
             xy = obj.GetPoints();
-            patch(xy(1,:), xy(2,:), color, 'FaceAlpha', faceAlpha, 'EdgeColor', 'none');
+            patch(xy(1,:), xy(2,:), color, 'FaceAlpha', faceAlpha, 'EdgeAlpha', edgeAlpha, 'EdgeColor', color, 'LineWidth', 1.5);
         end
         
         %% Generate almost equally spaced parameters

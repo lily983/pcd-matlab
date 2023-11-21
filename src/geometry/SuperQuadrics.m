@@ -708,7 +708,7 @@ classdef SuperQuadrics < handle
             [x, y, z] = obj.GetSurfPoints();
             
             surf(x, y, z, 'FaceColor', color, 'EdgeColor', color,...
-                'FaceAlpha', faceAlpha);
+                'FaceAlpha', faceAlpha, 'EdgeAlpha', 0.2);
         end
         
         %% GetVolume compute volume of superquadrics
