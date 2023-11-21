@@ -20,6 +20,5 @@ elseif dimension==3
 end
 
 Sigmaf = (1 + sqrt(trace(Q2)/trace(Q1))) * Q1 + (1 + sqrt(trace(Q1)/trace(Q2))) * Q2;
-mf = s1.tc - s2.tc;
-
+mf = zeros(dimension, 1);
 end
