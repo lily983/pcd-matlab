@@ -1,4 +1,4 @@
-function Sigma = positionErrorDistribution(objectType, distribution)
+function Sigma = positionErrorDistribution(distribution)
 
 if nargin==1
     distribution='large';
@@ -16,9 +16,9 @@ switch distribution
         sizeScale = 2e-03;
 end
 
-if strcmp(objectType, 'sphere')
-    sizeScale = 0.1*sizeScale;
-end
+% if strcmp(objectType, 'sphere')
+%     sizeScale = 0.1*sizeScale;
+% end
 
 Sigma = sizeScale.*Sigma;
 
