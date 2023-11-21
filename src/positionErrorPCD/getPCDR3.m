@@ -90,31 +90,39 @@ switch method
             prob = NaN;
         end
         time = toc;
-    case 'PCD-GMM-2SG'
+    case 'PCD-GMM'
         % Position error is assumed to follow N(x; 0, Sigmax)
         tic;
         try
-            prob = max_prob_gaussian_mixture(s1, s2, zeros(3,1), Sigmax, 'fast-computation', '2SG');
+            prob = max_prob_gaussian_mixture(s1, s2, zeros(3,1), Sigmax, 'fast-computation');
         catch
             prob = NaN;
         end
         time = toc; 
-    case 'PCD-GMM-4SG'
+    case 'PCD-ellip-UB-exact'
+        tic;
+        try 
+            prob = max_prob_ellip_UB_exact(s1, s2, Sigmax);
+        catch 
+            prob = NaN;
+        end
+        time = toc;
+    case 'PCD-ellip-UB-approximation'
+        tic;
+        try 
+            prob = max_prob_ellip_UB_approximation(s1, s2, Sigmax);
+        catch
+            prob = NaN;
+        end
+        time = toc;
+    case 'PCD-linear-chance-constraint'
         tic;
         try
-            prob = max_prob_gaussian_mixture(s1, s2, zeros(3,1), Sigmax, 'fast-computation', '4SG');
-        catch
+            prob = max_prob_linear_chance_constraint(s1, s2, Sigmax);
+        catch 
             prob = NaN;
         end
-        time = toc; 
-    case 'PCD-GMM-5SG'
-        tic;
-        try
-            prob = max_prob_gaussian_mixture(s1, s2, zeros(3,1), Sigmax, 'fast-computation', '5SG');
-        catch
-            prob = NaN;
-        end
-        time = toc; 
+        time = toc;
 end
 
 % truncate the probability to 1 if it is larger than 1

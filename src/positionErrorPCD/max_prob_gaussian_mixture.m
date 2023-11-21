@@ -1,4 +1,4 @@
-function prob = max_prob_gaussian_mixture(s1, s2, mx, Sigmax, method1, method2)
+function prob = max_prob_gaussian_mixture(s1, s2, mx, Sigmax, method1)
 % Check dimension 
 dimension = size(Sigmax, 2);
 
@@ -19,14 +19,28 @@ switch method1
         [mf, Sigmaf] = get_bounding_ellip_fixed_point(s1, s2);
 end
 
-%choose which gmm to use(2 SG or 3SG or 4SG or 5SG)
-[a, b] = get_gmm_param(Sigmaf, method2);
+[a1, b1] = get_gmm_param(Sigmaf, '1SG');
 
 % compute probability of collision 
-prob=0;
+prob1=0;
 
-for i=1:size(a,2)
-    prob = prob + a(i)*Gaussian_integration(mf, Sigmaf/b(i), mx, Sigmax) / b(i)^(dimension/2);
+for i=1:size(a1,2)
+    prob1 = prob1 + a1(i)*Gaussian_integration(mf, Sigmaf/b1(i), mx, Sigmax) / b1(i)^(dimension/2);
+end
+
+[a2, b2] = get_gmm_param(Sigmaf, '5SG');
+
+% compute probability of collision 
+prob2=0;
+
+for i=1:size(a2,2)
+    prob2 = prob2 + a2(i)*Gaussian_integration(mf, Sigmaf/b2(i), mx, Sigmax) / b2(i)^(dimension/2);
+end
+
+if prob1>prob2
+    prob=prob2;
+else
+    prob=prob1;
 end
 
 end
