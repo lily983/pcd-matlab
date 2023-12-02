@@ -1,4 +1,4 @@
-function [prob, time] = getPCDR3(s1, s2, Sigmax, method)
+function [prob, time] = getPCDR3(s1, s2, mx, Sigmax, method)
 %getPCDR3 Get the probability of collision of object s1 and s2 where s2
 %subjects to the position error which follows the Gaussian distribution N(x; 0, Sigmax)
 %   Inputs:
@@ -26,7 +26,7 @@ function [prob, time] = getPCDR3(s1, s2, Sigmax, method)
 %       prob probability of collision
 
 switch method
-    case 'PCD-exact'
+    case 'Exact'
         tic;
         prob = exact_prob_translation(s1, s2, Sigmax, 1e+03);
         time = toc;
@@ -74,55 +74,50 @@ switch method
             prob = NaN;
         end
         time = toc; 
-    case 'PCD-ellip-exact'
-        tic;
-        try
-            prob = max_and_exact_prob_ellipsoids(Sigmax, s1, s2, 'exact');
-        catch 
-            prob = NaN;
-        end
-        time = toc;
-    case 'PCD-ellip-bound'
-        tic;
-        try
-            prob = max_and_exact_prob_ellipsoids(Sigmax, s1, s2, 'max');
-        catch 
-            prob = NaN;
-        end
-        time = toc;
     case 'PCD-GMM'
         % Position error is assumed to follow N(x; 0, Sigmax)
         tic;
         try
-            prob = max_prob_gaussian_mixture(s1, s2, zeros(3,1), Sigmax, 'fast-computation');
+            prob = max_prob_gaussian_mixture(s1, s2, Sigmax, 'fast-computation');
         catch
             prob = NaN;
         end
         time = toc; 
-    case 'PCD-ellip-UB-exact'
-        tic;
-        try 
-            prob = max_prob_ellip_UB_exact(s1, s2, Sigmax);
-        catch 
-            prob = NaN;
-        end
-        time = toc;
-    case 'PCD-ellip-UB-approximation'
-        tic;
-        try 
-            prob = max_prob_ellip_UB_approximation(s1, s2, Sigmax);
+    case 'quadratic_exact'
+        try
+            [prob, time] = quadraticExact(s1, s2, mx, Sigmax)
         catch
             prob = NaN;
+            time = NaN;
         end
-        time = toc;
-    case 'PCD-linear-chance-constraint'
-        tic;
+    case 'quadratic_bound'
         try
-            prob = max_prob_linear_chance_constraint(s1, s2, Sigmax);
+            [prob, time] = quadraticBound(s1, s2, mx, Sigmax)
+        catch
+            prob = NaN;
+            time = NaN;
+        end
+    case 'LCC_tangent_point'
+        try
+            [prob, time] = linearChanceConstraintBound(s1, s2, mx, Sigmax, 'tangent-point', false);
         catch 
             prob = NaN;
+            time = NaN;
         end
-        time = toc;
+    case 'LCC_closed_point'
+        try
+            [prob, time] = linearChanceConstraintBound(s1, s2, mx, Sigmax, 'closed-point', false);
+        catch 
+            prob = NaN;
+            time = NaN;
+        end
+    case 'LCC_center_point'
+        try
+            [prob, time] = linearChanceConstraintBound(s1, s2, mx, Sigmax, 'center-point', false);
+        catch 
+            prob = NaN;
+            time = NaN;
+        end
 end
 
 % truncate the probability to 1 if it is larger than 1
