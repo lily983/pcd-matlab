@@ -1,17 +1,16 @@
-function [prob, t] = quadraticExact(s1, s2, Sigma)
+function [prob, t] = quadraticExact(s1, s2, mx, Sigma)
 % This function reproduce methods using CDF of quadratic form of Gaussian
 % distributed variable to get PCD value. The code is modified based on
 % source code provided by Anatony Thomas https://bitbucket.org/1729antony/ comparison_cp_methods/src/master/
     % Inputs:
         % s1, s2: sphere or ellipsoid
+        % mx: center of position error distribution
         % Sigma: covariance matrix of position error distribution
     % Outputs:
         % prob: PCD value
         % t: computation time
 tic;
 prob = 0;
-    
-mu = s2.tc-s1.tc;
 
 % In Thomas paper, only spheres are considered P = P(x' * x < (r1+r2)^2)
 % In Pan Jia paper, ellipsoids are considered P = P(x' * A * x < 1)
@@ -21,7 +20,7 @@ mu = s2.tc-s1.tc;
 radius = 1;
 [~, A] = get_bounding_ellip(s1, s2);
 
-mu_transformed = A^0.5 \ mu;
+mu_transformed = A^0.5 \ mx;
 Sigma_transformed = A^0.5 \ Sigma / A^0.5;
 A_transformed = A^0.5 \ A / A^0.5; % eye(3)
 

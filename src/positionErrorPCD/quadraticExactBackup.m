@@ -1,4 +1,4 @@
-function [prob, t] = max_prob_ellip_UB_exact(s1, s2, Sigma)
+function [prob, t] = max_prob_ellip_UB_exact(s1, s2, mx, Sigma)
 % This function reproduce methods using CDF of quadratic form of Gaussian
 % distributed variable to get PCD value. The code is writen based on the
 % equations on paper.
@@ -6,8 +6,6 @@ function [prob, t] = max_prob_ellip_UB_exact(s1, s2, Sigma)
 % condition to break the iteration and the place of (-1)^k
 tic;
 prob = 0;
-    
-mu = s2.tc-s1.tc;
 
 % In Thomas paper, only spheres are considered P = P(x' * x < (r1+r2)^2)
 % In Pan Jia paper, ellipsoids are considered P = P(x' * A * x < 1)
@@ -16,7 +14,7 @@ mu = s2.tc-s1.tc;
 % space
 [~, A] = get_bounding_ellip(s1, s2);
 
-mu_transformed = A^0.5 \ mu;
+mu_transformed = A^0.5 \ mx;
 Sigma_transformed = A^0.5 \ Sigma / A^0.5;
 A_transformed = A^0.5 \ A / A^0.5; % eye(3)
 

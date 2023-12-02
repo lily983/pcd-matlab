@@ -1,4 +1,4 @@
-function [prob, t] = quadraticBound(s1, s2, Sigma)
+function [prob, t] = quadraticBound(s1, s2, mx, Sigma)
 % This function reproduce methods using Markov inequality of random
 % variable to get PCD value. The code is written based on 
 % Eq. 22 in paper "Exact and Bounded Collision Probability for Motion
@@ -11,10 +11,6 @@ function [prob, t] = quadraticBound(s1, s2, Sigma)
         % t: computation time
 tic;
 prob=0;
-
-% Difference between centers of two ellipsoids
-mu_y = s2.tc - s1.tc;
-Sigma_y = Sigma;
 
 % Defining matrices
 B = quat2rotm(s1.q) * diag(s1.a).^2 * quat2rotm(s1.q)';
@@ -38,7 +34,7 @@ D = sqrtm(B) / (lamda_0*eye(3) - inv(C_bar)) / sqrtm(B);
 A = D' / B * D;
  
 %compute beta
-[expectation, standard_deviation] = from_quadratic(mu_y, Sigma_y, A);
+[expectation, standard_deviation] = from_quadratic(mx, Sigma, A);
 beta = expectation + standard_deviation;
 if beta < 1/lamda_0^2
     prob=1;
