@@ -46,36 +46,24 @@ switch method
         a = (s2.tc - pt_cls.mink) ./ norm((s2.tc - pt_cls.mink));
         x_mink = pt_cls.mink;
     case 'tangent-point'
-        %Do a space transformation so that Sigma = eye(3)
-        mx = Sigma^0.5 \ mx;
-        % Initial condition: s2 center as viewed from s1 frame
-        s1.tc = Sigma^0.5 \ s1.tc;
-        s1.q = rotm2quat(Sigma^0.5 \  quat2rotm(s1.q) / Sigma^0.5);
-        s2.tc = Sigma^0.5 \ s2.tc;
-        s2.q = rotm2quat(Sigma^0.5 \  quat2rotm(s2.q) / Sigma^0.5);
-        
-        R1 = quat2rotm(s1.q) ;
-        R2 = quat2rotm(s2.q) ;
-        s2_tc_in_s1 = R1' * (s2.tc-s1.tc);
-        psi0 = [atan2( s2_tc_in_s1(3), norm(s2_tc_in_s1(1:2)) ),...
-                    atan2( s2_tc_in_s1(2), s2_tc_in_s1(1) )];
-        m0 = s1.GetGradientsFromSpherical(psi0);
-        
-        minkObj = MinkSumClosedForm(s1, s2, R1, R2);
-        m_opt = fixed_point(m0, minkObj);
-        a = m_opt./norm(m_opt);
-        
-        % transform space back
-        a = Sigma^0.5 * a;
-        s1.tc = Sigma^0.5 * s1.tc;
-        s1.q = rotm2quat(Sigma^0.5 *  quat2rotm(s1.q) * Sigma^0.5);
-        s2.tc = Sigma^0.5 * s2.tc;
-        s2.q = rotm2quat(Sigma^0.5 *  quat2rotm(s2.q) * Sigma^0.5);
-        
-        R1 = quat2rotm(s1.q) ;
-        R2 = quat2rotm(s2.q) ;
-        minkObj = MinkSumClosedForm(s1, s2, R1, R2);
-        x_mink= minkObj.GetMinkSumFromNormal(quat2rotm(s1.q) \ a) + s1.tc;
+        [flag, ~, pt_cls, condition] = collision_cfc(s1, s2, 'constrained');
+        if flag && condition<1e-02
+          prob = 1;
+          t = toc;
+          return;
+        elseif condition>1e-02
+          error('LCC-closed-point collision_cfc_constrained not converge, failed to find closed-points');
+        end
+        n0 = (s2.tc-s1.tc)./norm((s2.tc-s1.tc));
+        minkObj = MinkSumClosedForm(s1,s2,Sigma^0.5 \ quat2rotm(s1.q), Sigma^0.5 \ quat2rotm(s2.q));
+        option = optimoptions('fmincon', 'Algorithm', 'interior-point',...
+            'display', 'iter');
+        n_opt = fmincon(@(n) func_con(n, minkObj, Sigma), n0,...
+            [], [], [], [], [], [], @(n) nlcon(n, s1), option);
+        x_mink = minkObj.GetMinkSumFromNormal(n_opt);
+        x_mink = Sigma^0.5 * x_mink + s1.tc;
+        a = Sigma^0.5 * n_opt;
+        a = a ./ norm(a);
 end
 
 b = norm(x_mink-s1.tc);
@@ -92,6 +80,7 @@ if isplot
     else
         color = 'g';
     end
+    visualize_bounding_ellip(s1,s2);
     plotPlane(a, x_mink, color);
 end
 
@@ -153,4 +142,22 @@ zPlane = -a(1)/a(3) * x - a(2)/a(3)*y + a(1)/a(3)*x_mink(1) + a(2)/a(3)*x_mink(2
 scatter3(x_mink(1), x_mink(2), x_mink(3), 'MarkerFaceColor', color);
 
 surf(x, y, zPlane, 'FaceColor', color, 'FaceAlpha', 0.5);
+end
+
+% Distance cost: distance from point to Minkowski sums boundary
+function F = func_con(n, minkObj, Sigma)
+% Minkowski sums with parameter x
+p0 = Sigma^0.5 \ minkObj.s2.tc;
+% m = minkObj.s1.GetGradientsFromCartesian(x);
+mink = minkObj.GetMinkSumFromNormal(n) +  Sigma^0.5 \ minkObj.s1.tc;
+
+% Cost function
+F = sum((p0 - mink).^2);
+end
+
+% Nonlinear constraint for gradient vector
+function [c,ceq] = nlcon(n, s1)
+x =  s1.GetPointsFromNormal(n);
+ceq = s1.GetImplicitFunction(x);
+c = [];
 end
