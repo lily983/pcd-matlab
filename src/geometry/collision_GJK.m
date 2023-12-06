@@ -1,4 +1,4 @@
-function flag = collision_mesh(s1, s2)
+function flag = collision_GJK(s1, s2)
 % This function compute the collision states of two meshed objects using
 % GJK algorithm
 
