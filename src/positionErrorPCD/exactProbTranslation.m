@@ -1,5 +1,7 @@
-function prob = exact_prob_translation(s1, s2, Sigma, N)
+function [prob, t] = exactProbTranslation(s1, s2, mx, Sigma, N)
 %exact_prob_translation Calculate the MSC approximated exact probability
+tic;
+prob = 0;
 
 %check dimension
 dimension = size(Sigma, 1);
@@ -8,9 +10,7 @@ dimension = size(Sigma, 1);
 s1objectType = getObjectType(s1);
 s2objectType = getObjectType(s2);
 
-prob = 0;
-
-samples = mvnrnd(zeros(3,1), Sigma, N);
+samples = mvnrnd(mx, Sigma, N);
 
 if dimension == 2
     s3 = SuperEllipse([s2.a(1), s2.a(2), s2.eps, s2.taper...
@@ -21,7 +21,7 @@ elseif dimension == 3
 end
 
 for i=1:N
-    s3.tc = s2.tc + samples(i, :)';
+    s3.tc = samples(i, :)';
     
     if dimension == 2
         %if s1 and s2 are sphere
@@ -30,7 +30,7 @@ for i=1:N
                 prob = prob+1;
             end
         else
-            if collision_mesh(s1, s2)
+            if collision_GJK(s1, s2)
                 prob=prob+1;
             end
         end
@@ -40,15 +40,19 @@ for i=1:N
             if norm(s1.tc - s3.tc) <= (s1.a(1)+s3.a(1))
                 prob = prob+1;
             end
-        else
+        elseif strcmp(s1objectType, 'ellip')==1 && strcmp(s2objectType, 'ellip')==1
             if collision_ellipsoid_asc(s1, s3)
+                prob = prob+1;
+            end
+        elseif strcmp(s1objectType, 'superquadrics')==1 && strcmp(s2objectType, 'superquadrics')==1
+            if collision_cfc(s1, s3)
                 prob = prob+1;
             end
         end
     end
-    
+
 end
 
 prob = prob/N;
-
+t = toc;
 end
