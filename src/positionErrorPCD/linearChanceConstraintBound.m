@@ -1,4 +1,4 @@
-function [prob, t] = linearChanceConstraintBound(s1, s2, mx, Sigma, method, isplot)
+function [prob, t, a, x_mink, r] = linearChanceConstraintBound(s1, s2, mx, Sigma, method, isplot)
 % This function reproduce methods using linear chance constraint (LCC)
 % to get PCD value for Gaussian distributed variable. The code is inspired
 % based on papers "Chance-Constrained Collision Avoidance for MAVs in
@@ -46,7 +46,7 @@ switch method
         a = (s2.tc - pt_cls.mink) ./ norm((s2.tc - pt_cls.mink));
         x_mink = pt_cls.mink;
     case 'tangent-point'
-        [flag, ~, pt_cls, condition] = collision_cfc(s1, s2, 'constrained');
+        [flag, ~, ~, condition] = collision_cfc(s1, s2, 'constrained');
         if flag && condition<1e-02
           prob = 1;
           t = toc;
@@ -54,6 +54,7 @@ switch method
         elseif condition>1e-02
           error('LCC-closed-point collision_cfc_constrained not converge, failed to find closed-points');
         end
+        % Notice that n is in canonical frame
         n0 = (s2.tc-s1.tc)./norm((s2.tc-s1.tc));
         minkObj = MinkSumClosedForm(s1,s2,Sigma^0.5 \ quat2rotm(s1.q), Sigma^0.5 \ quat2rotm(s2.q));
         option = optimoptions('fmincon', 'Algorithm', 'interior-point',...
@@ -61,9 +62,31 @@ switch method
         n_opt = fmincon(@(n) func_con(n, minkObj, Sigma), n0,...
             [], [], [], [], [], [], @(n) nlcon(n, s1), option);
         x_mink = minkObj.GetMinkSumFromNormal(n_opt);
-        x_mink = Sigma^0.5 * x_mink + s1.tc;
-        a = Sigma^0.5 * n_opt;
-        a = a ./ norm(a);
+        % x_mink is in rotated and linear transformed space, we need to do
+        % inverse linear transformation to convert it to the rotated space
+        x_mink = Sigma^0.5 * x_mink +s1.tc;
+        % now we need to transform n_opt to rotated frame
+        n_final = quat2rotm(s1.q) * n_opt;
+        a = n_final./norm(n_final);
+    case 'tangent-point-ellip'
+        % this only for two ellipsoids
+        if strcmp(getObjectType(s1), 'ellip')==0 && strcmp(getObjectType(s1), 'ellip')==0
+            error('lcc-tangent-point-ellip only for two ellipsoids cases');
+        end
+        % Minkowski sum for two ellipsoids and position error
+        % ellipsoid(function of distance r)
+        n = sym('x', [1,3]);
+        syms r
+        % get defining matrix of ellip 1 and 2
+        A1 = quat2rotm(s1.q) * diag(s1.a) * quat2rotm(s1.q)';
+        A2 = quat2rotm(s2.q) * diag(s2.a) * quat2rotm(s2.q)';
+        A3 = Sigma;
+        eqn1=(A1^2 * n') / norm(A1 * n') +  (A2^2 * n') / norm(A2 * n') +  ((A3.*r)^2 * n') / norm((A3.*r) * n') == s2.tc;
+        eqn2 = norm(n) == 1;
+        solution = vpasolve([eqn1; eqn2], [n, r]);
+        a = double([solution.x1; solution.x2; solution.x3]);
+        r = double(solution.r);
+        x_mink = (A1^2 *a) / norm(A1 * a) +  (A2^2 * a) / norm(A2 * a) + s1.tc;
 end
 
 b = norm(x_mink-s1.tc);
@@ -77,10 +100,12 @@ if isplot
         color = 'r';
     elseif strcmp(method, 'closed-point')
         color = 'b';
-    else
+    elseif strcmp(method, 'tangent-point-ellip')
+        color = 'y';
+    elseif strcmp(method, 'center-point')
         color = 'g';
     end
-    visualize_bounding_ellip(s1,s2);
+%     visualize_bounding_ellip(s1,s2);
     plotPlane(a, x_mink, color);
 end
 
@@ -148,7 +173,6 @@ end
 function F = func_con(n, minkObj, Sigma)
 % Minkowski sums with parameter x
 p0 = Sigma^0.5 \ minkObj.s2.tc;
-% m = minkObj.s1.GetGradientsFromCartesian(x);
 mink = minkObj.GetMinkSumFromNormal(n) +  Sigma^0.5 \ minkObj.s1.tc;
 
 % Cost function
