@@ -6,7 +6,7 @@ function   [prob, time, pdf_max_x, x_max] = maxPDFSphere(s1, s2, mx, Sigma)
 %the searching region is the sum of two spheres
 %
 %Inputs
-%   mx: Mean of relative position error x = x2-x1 (m = s2.tc-s1.tc)
+%   mx: Mean of relative position error x = x2-x1
 %   Sigma: Covariance of the probability
 %   s1, s2: Two convex bodies
 %Outputs
