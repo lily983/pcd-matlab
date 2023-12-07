@@ -81,7 +81,7 @@ switch method
         A1 = quat2rotm(s1.q) * diag(s1.a) * quat2rotm(s1.q)';
         A2 = quat2rotm(s2.q) * diag(s2.a) * quat2rotm(s2.q)';
         A3 = Sigma;
-        eqn1=(A1^2 * n') / norm(A1 * n') +  (A2^2 * n') / norm(A2 * n') +  ((A3.*r)^2 * n') / norm((A3.*r) * n') == s2.tc;
+        eqn1=(A1^2 * n') / norm(A1 * n') +  (A2^2 * n') / norm(A2 * n') +  ((A3.*r)^2 * n') / norm((A3.*r) * n') == s2.tc - s1.tc;
         eqn2 = norm(n) == 1;
         solution = vpasolve([eqn1; eqn2], [n, r]);
         a = double([solution.x1; solution.x2; solution.x3]);
