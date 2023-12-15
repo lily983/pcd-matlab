@@ -1,5 +1,7 @@
-function [prob, t] = exactProbTranslation(s1, s2, mx, Sigma, N)
+function [prob, t] = exactProbTranslation(s1, s2, Sigma, N)
 %exact_prob_translation Calculate the MSC approximated exact probability
+% Only for s2 with position error cases!
+% This function is not fast MC for two error cases!
 tic;
 prob = 0;
 
@@ -10,7 +12,7 @@ dimension = size(Sigma, 1);
 s1objectType = getObjectType(s1);
 s2objectType = getObjectType(s2);
 
-samples = mvnrnd(mx, Sigma, N);
+samples = mvnrnd(s2.tc, Sigma, N);
 
 if dimension == 2
     s3 = SuperEllipse([s2.a(1), s2.a(2), s2.eps, s2.taper...
