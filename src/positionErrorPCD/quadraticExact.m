@@ -9,6 +9,14 @@ function [prob, t] = quadraticExact(s1, s2, mx, Sigma)
     % Outputs:
         % prob: PCD value
         % t: computation time
+        
+s1objectType = getObjectType(s1);
+s2objectType = getObjectType(s2);
+
+if strcmp(s1objectType, 'superquadric')==1 && strcmp(s2objectType, 'superquadric')==1
+    error('Input objects are not sphere or ellip, unable to use quadraticExact');
+end
+
 tic;
 prob = 0;
 
@@ -52,7 +60,7 @@ while (true)
 
 end   
 
-prob = tmp;
+prob = real(tmp);
 t = toc;
 end
 
