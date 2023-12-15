@@ -2,21 +2,19 @@ function visualize_bounding_ellip(s1, s2)
 % Plot the minkowski sum of s1 and s2 and the bounding ellip of the
 % minkowski sum
 
-[mf, Sigmaf] = get_bounding_ellip(s1, s2);
-
-% [mf, Sigmaf] = get_bounding_ellip_fixed_point(s1, s2);
-
-det(Sigmaf)
-
-% invT = inv(Sigmaf)+inv(Sigmax);
-% % M = 1/det(T).*T;
-% c = (det(Sigmaf)/det(inv(invT)))^(1/3);
-% T = c.*inv(invT);
-
-% R diag R'
-[R, Lamda ,~] = svd(Sigmaf);
+% [mf, Sigmaf] = get_bounding_ellip(s1, s2);
+% 
+% % [mf, Sigmaf] = get_bounding_ellip_fixed_point(s1, s2);
+% 
+% % invT = inv(Sigmaf)+inv(Sigmax);
+% % % M = 1/det(T).*T;
+% % c = (det(Sigmaf)/det(inv(invT)))^(1/3);
+% % T = c.*inv(invT);
+% 
+% % R diag R'
+% [R, Lamda ,~] = svd(Sigmaf);
     
-dimension = size(Sigmaf,1);
+dimension = size(s1.a,2);
     
     if dimension == 2
         s3 = SuperEllipse([s2.a(1), s2.a(2), s2.eps, s2.taper...
@@ -42,22 +40,26 @@ dimension = size(Sigmaf,1);
 %         s3.PlotShape(hex2rgb('EBBF00 '), 0.7);
 
     elseif dimension ==3
-        s3 = SuperQuadrics({s2.a, s2.eps, [0, 0]...
-            s2.tc, s2.q, s2.N});
-        s3.a = sqrt(diag(Lamda));
-        s3.q = rotm2quat(R);
-        s3.tc = mf;
+%         s3 = SuperQuadrics({s2.a, s2.eps, [0, 0]...
+%             s2.tc, s2.q, s2.N});
+%         s3.a = sqrt(diag(Lamda));
+%         s3.q = rotm2quat(R);
+%         s3.tc = mf;
         m1 = s1.GetGradientsCanonical();
         mink = MinkSumClosedForm(s1,s2,quat2rotm(s1.q),quat2rotm(s2.q));
-        x_mink = mink.GetMinkSumFromGradient(m1)+s1.tc-s2.tc;
+%         x_mink = mink.GetMinkSumFromGradient(m1)+s1.tc-s2.tc;
+        x_mink = mink.GetMinkSumFromGradient(m1)+s1.tc;
 %         mu_m = T* inv(Sigmaf) * mf ;
 %         s3.tc = mu_m;
+
+        SN = s1.N;
         
-        figure; hold on;axis equal;
+        figure; hold on;
+        axis equal;
         s1.PlotShape(hex2rgb('4FAAD1'), 0.7);
         s2.PlotShape(hex2rgb('45AC59'), 0.7);
-        s3.PlotShape(hex2rgb('EBBF00 '), 0.7);
-        patch_mink = surf2patch(reshape(x_mink(1,:), [20,20]), reshape(x_mink(2, :), [20,20]), reshape(x_mink(3, :), [20,20]), 'triangles');
+%         s3.PlotShape(hex2rgb('EBBF00 '), 0.7);
+        patch_mink = surf2patch(reshape(x_mink(1,:), SN), reshape(x_mink(2, :), SN), reshape(x_mink(3, :), SN), 'triangles');
         patch_mink.FaceColor = hex2rgb('CE2836 ');
         patch_mink.FaceAlpha = 0.01;
         patch_mink.EdgeColor = hex2rgb('CE2836');
