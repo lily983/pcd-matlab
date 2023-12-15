@@ -16,7 +16,7 @@ tic;
 prob = 0;
 
 % Function file shares the same pointer to s2 in the main file
-s3 = SuperQuadrics({s2.a, s2.eps, [0, 0]...
+s3 = SuperQuadrics({s2.a, s2.eps, [0, 0], ...
     s2.tc, s2.q, s2.N});
 
 if collision_cfc(s1, s2)
