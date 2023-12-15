@@ -5,6 +5,11 @@ function visualizeDataFittingResult(data, color)
 %     data    1xN array of PCD results by a method
 %     color   1x3 rgb value
  
+% Check NaN
+if any(isnan(data))~=0
+    return
+end
+
 dataSize = size(data,2);
 
 xIndex = 1:1:dataSize;
