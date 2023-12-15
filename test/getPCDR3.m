@@ -28,6 +28,9 @@ function [prob, time] = getPCDR3(s1, s2, mx, Sigma1, Sigma2, method)
 %           quadratic form
 %           'LCC_center_point': Linear chance constraint, vector connecting
 %           center of two objects
+%           'LCC_center_point_cfc': Linear chance constraint, vector connecting
+%           center of two objects ( using closed-form contact space without
+%           the need to get bounding ellipsoid for Minkowski sum)
 %            'LCC_closed_point': (our method): Linear chance constraint,
 %            normal vector of the closed point on Minkowski sum  
 %            'LCC_tangent_point': (our method) Linear chance constraint,
@@ -120,6 +123,13 @@ switch method
     case 'LCC_center_point'
         try
             [prob, time] = linearChanceConstraintBound(s1, s2, mx, Sigmax, 'center-point', false);
+        catch 
+            prob = NaN;
+            time = NaN;
+        end
+    case 'LCC_center_point_cfc'
+        try
+            [prob, time] = linearChanceConstraintBound(s1, s2, mx, Sigmax, 'center-point-cfc', false);
         catch 
             prob = NaN;
             time = NaN;

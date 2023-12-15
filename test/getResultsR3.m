@@ -75,7 +75,7 @@ for iSample=1:sampleNumber
 %         if two object collide at mean pose, the following algorithms will
 %         not work
         if flag && any(strcmp(iMethod, {'Maxpdf', 'Maxpdf_SQ', 'LCC_center_point', 'LCC_closed_point', ...
-                'LCC_tangent_point', 'Quadratic_exact', 'Quadratic_bound', 'Divergence_,mesh'}))
+                'LCC_tangent_point', 'Quadratic_exact', 'Quadratic_bound', 'Divergence_,mesh', 'LCC_center_point_cfc'}))
             results.(genvarname(iMethod))(iSample)=1;
             results.(append(iMethod, 'Time'))(iSample)=NaN;
             continue;
@@ -84,7 +84,7 @@ for iSample=1:sampleNumber
         % If TwoErrorCase, only get results for following methods
         if TwoErrorCase 
             if any(strcmp(iMethod, {'Fast_sampling', 'Exact_two', 'EB_99', 'EB_95', 'GMF', 'Quadratic_exact', 'Quadratic_bound',...
-                    'LCC_center_point', 'LCC_closed_point', 'LCC_tangent_point'})) 
+                    'LCC_center_point', 'LCC_closed_point', 'LCC_tangent_point', 'LCC_center_point_cfc'})) 
                 [results.(genvarname(iMethod))(iSample), results.(append(iMethod, 'Time'))(iSample)] ...
                     = getPCDR3(s1, s2, mx, Sigma1, Sigma2, iMethod);
             else

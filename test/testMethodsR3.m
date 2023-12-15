@@ -1,7 +1,7 @@
 clc; clear; close all;
 add_path()
 
-sampleNumber = 1e+01;
+sampleNumber = 1e+02;
 
 %%
 % % Mute key-value pair if don't want to test any method
@@ -22,6 +22,7 @@ M('Quadratic_bound') = hex2rgb('8f90dd') ;% light purple
 M('LCC_center_point') = hex2rgb('2023c7'); % bright purple
 M('LCC_tangent_point') = hex2rgb('8a8686'); % light grey
 M('LCC_closed_point') = hex2rgb('EBBF00'); % ginger yellow
+M('LCC_center_point_cfc') = hex2rgb('1d5406'); % dark green
 % M('Maxpdf_SQ') = hex2rgb('4996db'); % light blue
 
 % % GMF is the closed-form solution proposed by us
