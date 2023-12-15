@@ -14,9 +14,9 @@ end
 
 % Choose methods: number of single gaussians
 switch method
-    case '1SG'
-        a= [2e+09];
-        b= [40.9949];
+    case '2SG'
+        a= [1e+09 1e+09];
+        b= [40.9949 40.9949];
     case '5SG'
         a=[500 500 500 500 500];
         b=[12.2474, 14.7835, 13.0516, 18.6186, 22.1856];
@@ -29,7 +29,7 @@ for i=1:size(a, 2)
     ma=ma+a(i)*exp(-b(i)/2);
 end
 
-ma = ((2*pi)^(dimension/2)*sqrt(det(Sigma)))/ma;
+ma = ((2*pi)^(dimension/2) * sqrt(det(Sigma))) / ma;
 a = ma.*a;
 
 end

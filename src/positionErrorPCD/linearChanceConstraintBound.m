@@ -31,6 +31,13 @@ prob = 0;
 %  Get distance b
 switch method
     case 'center-point'
+        [~, Sigmaf] = get_bounding_ellip(s1, s2);
+        p = (s2.tc - s1.tc);
+        a = (Sigmaf^0.5 \ p) ./ norm(Sigmaf^0.5 \ p);
+        prob = 1/2 + 1/2 * erf( (1-a' / Sigmaf^0.5 * p) / sqrt(2*a' *inv(Sigmaf^0.5) * Sigma * inv(Sigmaf^0.5) *a));
+        t = toc;
+        return;
+    case 'center-point-cfc'
         a = (s2.tc-s1.tc)./norm((s2.tc-s1.tc));
         mink = MinkSumClosedForm(s1,s2,quat2rotm(s1.q),quat2rotm(s2.q));
         x_mink = mink.GetMinkSumFromNormal(quat2rotm(s1.q) \ a)+s1.tc;
