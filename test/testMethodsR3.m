@@ -1,31 +1,61 @@
 clc; clear; close all;
-% add_path()
+add_path()
 
-sampleNumber = 1e+1;
+sampleNumber = 1e+01;
 
-keySet = {'Exact', 'LCC_center_point', 'LCC_closed_point', 'LCC_tangent_point'};
+%%
+% % Mute key-value pair if don't want to test any method
+% % key is the name of PCD method
+% % value is the color of PCD method
+M = containers.Map('KeyType','char','ValueType','any');
+M('Exact') = hex2rgb('000000'); % dark blue
+M('Exact_two') = hex2rgb('000000'); % black 
+M('Fast_sampling') = hex2rgb('f59494') ;% pink
+M('Divergence_mesh') = hex2rgb('45AC59'); % light green
+M('Maxpdf') = hex2rgb('f58612'); % origin
+M('EB_99') = hex2rgb('9f580f'); % brown
+M('EB_95') = hex2rgb('98646b'); % grape
+M('Quadratic_bound') = hex2rgb('8f90dd') ;% light purple
 
-colorSet = {hex2rgb('45498C'),  hex2rgb('f59494'), hex2rgb('45AC59'),  hex2rgb('EBBF00')};
+% % Methods: LCC_center_point, LCC_tangent_point, LCC_closed_point, Maxpdf_SQ
+% % are extended methods from previous works by us
+M('LCC_center_point') = hex2rgb('2023c7'); % bright purple
+M('LCC_tangent_point') = hex2rgb('8a8686'); % light grey
+M('LCC_closed_point') = hex2rgb('EBBF00'); % ginger yellow
+% M('Maxpdf_SQ') = hex2rgb('4996db'); % light blue
 
-%% Choose the position error distribution: sparse or concentrate
-% distribution = 'small';
-distribution = 'large';
+% % GMF is the closed-form solution proposed by us
+M('GMF') = hex2rgb('ff0010') ;% red
 
-Sigma = positionErrorDistribution(distribution);
+%% Choose the position error distribution: 'none', 'small', 'large'
+distribution = 'small';
+% distribution = 'large';
+% distribution = 'none';
+Sigma1 = positionErrorDistribution('small');
+Sigma2 = positionErrorDistribution('large');
+
+TwoErrorCase = 0;
+if all(diag(Sigma1))
+    TwoErrorCase = 1;
+end
+
 %% Generate sampleNumber random samples for spheres
-% Sigma = positionErrorDistribution(distribution);
-resultsSQ = getResultsR3(sampleNumber, 'superquadrics', Sigma, keySet);
+resultsSphere = getResultsR3(sampleNumber, 'sphere', Sigma1, Sigma2, M.keys);
 
-visualizeResults(resultsSQ, 'superquadrics', keySet, colorSet, sampleNumber);
+visualizeResults(resultsSphere, M.keys, M.values, sampleNumber);
 
-% %% Generate sampleNumber random samples for spheres
-% % Sigma = positionErrorDistribution(distribution);
-% resultsSphere = getResultsR3(sampleNumber, 'sphere', Sigma);
-% visualizeResults(resultsSphere, 'sphere');
-% 
-% %% Generate sampleNumber random samples for ellipsoids
-% % Sigma = positionErrorDistribution(distribution);
-% resultsEllip = getResultsR3(sampleNumber, 'ellipsoid', Sigma);
-% visualizeResults(resultsEllip, 'ellipsoid');
+[ratio_sphere, time_sphere, ub_sphere] = calculatePCDBenchmark(resultsSphere, M.keys, TwoErrorCase)
 
+%% Generate sampleNumber random samples for ellipsoids
+resultsEllip = getResultsR3(sampleNumber, 'ellipsoid', Sigma1, Sigma2, M.keys);
 
+visualizeResults(resultsEllip, M.keys, M.values, sampleNumber);
+
+[ratio_ellip, time_ellip, ub_ellip] = calculatePCDBenchmark(resultsEllip, M.keys, TwoErrorCase)
+
+%% Generate sampleNumber random samples for SQ
+resultsSQ = getResultsR3(sampleNumber, 'superquadrics', Sigma1, Sigma2, M.keys);
+
+visualizeResults(resultsSQ, M.keys, M.values, sampleNumber);
+
+[ratio_SQ, time_SQ, ub_SQ] = calculatePCDBenchmark(resultsSQ, M.keys, TwoErrorCase)
