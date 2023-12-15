@@ -42,15 +42,15 @@ s3.ang = rotm2angle(U);
 s3.tc = mf;
 s3.N=100;
 
-[~, Sigmaf_fp] = get_bounding_ellip_fixed_point(s1, s2);
-[U_fp, Lamda_fp] = svd(Sigmaf_fp);
-
-s3_fp = SuperEllipse([s2.a(1), s2.a(2), s2.eps, s2.taper...
-    s2.tc(1), s2.tc(2), s2.ang, s2.N]);
-s3_fp.a = sqrt(diag(Lamda_fp));
-s3_fp.ang = rotm2angle(U_fp);
-s3_fp.tc = mf;
-s3_fp.N=100;
+% [~, Sigmaf_fp] = get_bounding_ellip_fixed_point(s1, s2);
+% [U_fp, Lamda_fp] = svd(Sigmaf_fp);
+% 
+% s3_fp = SuperEllipse([s2.a(1), s2.a(2), s2.eps, s2.taper...
+%     s2.tc(1), s2.tc(2), s2.ang, s2.N]);
+% s3_fp.a = sqrt(diag(Lamda_fp));
+% s3_fp.ang = rotm2angle(U_fp);
+% s3_fp.tc = mf;
+% s3_fp.N=100;
 
 % Get minkowski sum of s1 and s2
 s1Points = s1.GetPoints()' - s1.tc';
@@ -59,9 +59,9 @@ pgon1 = polyshape(s1Points(:,1), s1Points(:,2));
 pgon2= polyshape(s2Points(:,1), s2Points(:,2));
 mSum = minkowskiSum(pgon1, pgon2);
 
-patch(mSum.Vertices(:,1), mSum.Vertices(:,2), hex2rgb('45498C'), 'FaceAlpha', 0.3, 'EdgeAlpha', 0.3);
-s3.PlotShape(hex2rgb('835434'), 0.0, 1); % brown color
-s3_fp.PlotShape(hex2rgb('ED5564'), 0.0, 1);
+patch(mSum.Vertices(:,1), mSum.Vertices(:,2), hex2rgb('45498C'), 'FaceAlpha', 0.0, 'EdgeAlpha', 1);
+s3.PlotShape(hex2rgb('ED5564'), 0.0, 0.8); % brown color
+% s3_fp.PlotShape(hex2rgb('ED5564'), 0.0, 1);
 
 %%% Put axes center at the origin
 ax = gca;

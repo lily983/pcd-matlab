@@ -1,6 +1,6 @@
 close all; clc;clear
 
-[a1, b1]= get_gmm_param(eye(1), '2SG');
+[a1, b1]= get_gmm_param(eye(1), '1SG');
 
 [a2, b2]=get_gmm_param(eye(1), '5SG');
 
@@ -19,15 +19,15 @@ fx = k*exp(-x.^2/2)/sqrt(2*pi);
 
 
 %% set y limit plot
-% figure; hold on;
-% Linewidth = 2.5;
+figure; hold on;
+Linewidth = 2.5;
 % plot(x, z, 'color', hex2rgb('D95980'), 'LineWidth', Linewidth);
-% plot(x, psi_2gm, 'color', hex2rgb('284E60'), 'LineWidth', Linewidth);
-% plot(x, psi_5gm, 'color', hex2rgb('F99B45'), 'LineWidth', Linewidth);
-% plot(x, fx, 'color', hex2rgb('63AAC0'), 'LineWidth', Linewidth);
-% % set(gca, 'YScale', 'log')
-% ylim([0.0, 10])
-% xlim([-3 3]);
+plot(x, psi_2gm, 'color', hex2rgb('284E60'), 'LineWidth', Linewidth);
+plot(x, psi_5gm, 'color', hex2rgb('F99B45'), 'LineWidth', Linewidth);
+plot(x, fx, 'color', hex2rgb('63AAC0'), 'LineWidth', Linewidth);
+% set(gca, 'YScale', 'log')
+ylim([0.0, 10])
+xlim([-3 3]);
 
 %% zoom plot
 figure; hold on;
