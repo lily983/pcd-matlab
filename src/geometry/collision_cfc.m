@@ -48,24 +48,15 @@ switch opt
         m_opt = fixed_point(m0, minkObj);
         
     case 'constrained'    
-        global m_constrained;
-        global i;
-        i=1;
-        m_constrained = [];
         % min_{m_1} |p0 - x_{1+2}(m_1)|,
         % s.t.      \Phi( \Nabla \Phi^{-1}(m_1) ) - 1 = 0
         option = optimoptions('fmincon', 'Algorithm', 'interior-point',...
             'display', 'none');
         m_opt = fmincon(@(m) func_con(m, minkObj), m0,...
             [], [], [], [], [], [], @(m) nlcon(m, s1), option);
-        
-        m_constrained;
+      
         
     case 'least-squares'
-        global m_ls;
-        global j;
-        j=1;
-        m_ls = [];
         % Optimization to solve min_{psi} |p0 - x_{1+2}(psi)|
         option = optimoptions('lsqnonlin',...
             'Algorithm', 'levenberg-marquardt',...
@@ -79,7 +70,8 @@ switch opt
         % Solution gradient in local frame
         m_opt = s1.GetGradientsFromSpherical(psi_opt);
         
-        m_ls;
+        % PCD-LCC-OPtimization
+        pt_cls.psi_opt  = psi_opt;
 end
 
 % Distance and closest points
@@ -92,6 +84,7 @@ pt_cls.mink = minkObj.GetMinkSumFromGradient(m_opt) + s1.tc;
 
 % Results
 [flag, dist, pt_cls, condition] = get_results(pt_cls, s2.tc, R1*m_opt);
+
 end
 
 %% Fixed-point iteration algorithm
@@ -117,8 +110,7 @@ for i = 1:100
     % Test convergence
     if norm(m_new-m02)<tol
         flag = 0;
-      %  disp('Finish fixed-point iteration, find the final gradient')
-        m_fp;
+%        disp('Finish fixed-point iteration, find the final gradient')
         return;
     end
     
@@ -154,11 +146,6 @@ mink = minkObj.GetMinkSumFromGradient(m) + minkObj.s1.tc;
 
 % Cost function
 F = sum((p0 - mink).^2);
-
-global m_constrained;
-global i;
-m_constrained(:,i) = m;
-i=i+1;
 end
 
 % Nonlinear constraint for gradient vector
@@ -177,8 +164,4 @@ mink = minkObj.GetMinkSumFromGradient(m) + minkObj.s1.tc;
 
 % Cost function
 F = p0 - mink;
-global m_ls;
-global j;
-m_ls(:,j) = m;
-j=j+1;
 end
