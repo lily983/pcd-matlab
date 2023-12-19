@@ -1,4 +1,4 @@
-function [prob, t, a, x_mink, r] = linearChanceConstraintBound(s1, s2, mx, Sigma, method, isplot)
+function [prob, t, a, x_mink] = linearChanceConstraintBound(s1, s2, mx, Sigma, method, isplot)
 % This function reproduce methods using linear chance constraint (LCC)
 % to get PCD value for Gaussian distributed variable. The code is inspired
 % based on papers "Chance-Constrained Collision Avoidance for MAVs in
@@ -34,13 +34,22 @@ switch method
         [~, Sigmaf] = get_bounding_ellip(s1, s2);
         p = (s2.tc - s1.tc);
         a = (Sigmaf^0.5 \ p) ./ norm(Sigmaf^0.5 \ p);
-        prob = 1/2 + 1/2 * erf( (1-a' / Sigmaf^0.5 * p) / sqrt(2*a' *inv(Sigmaf^0.5) * Sigma * inv(Sigmaf^0.5) *a));
+        prob = 1/2 + 1/2 * erf( (1-a' * inv(Sigmaf^0.5) * p) / sqrt(2*a' *inv(Sigmaf^0.5) * Sigma * inv(Sigmaf^0.5) *a));
         t = toc;
-        return;
+        x_mink = p ./ norm(Sigmaf^0.5 \ p);
+        a = (Sigmaf \ p) ./ norm(Sigmaf \ p);
+        return
     case 'center-point-cfc'
-        a = (s2.tc-s1.tc)./norm((s2.tc-s1.tc));
-        mink = MinkSumClosedForm(s1,s2,quat2rotm(s1.q),quat2rotm(s2.q));
-        x_mink = mink.GetMinkSumFromNormal(quat2rotm(s1.q) \ a)+s1.tc;
+%         a = (s2.tc-s1.tc)./norm((s2.tc-s1.tc));
+%         mink = MinkSumClosedForm(s1,s2,quat2rotm(s1.q),quat2rotm(s2.q));
+%         x_mink = mink.GetMinkSumFromNormal(quat2rotm(s1.q) \ a)+s1.tc;
+%type2
+%         u = quat2rotm(s1.q)' * (s2.tc-s1.tc)./norm((s2.tc-s1.tc));
+%         psi_0 = [atan2(u(3), sqrt(u(1)^2 + u(2)^2)), atan2(u(2), u(1))];
+%         m1 = s1.GetGradientsFromSpherical(psi_0);
+%         mink = MinkSumClosedForm(s1,s2,quat2rotm(s1.q),quat2rotm(s2.q));
+%         x_mink = mink.GetMinkSumFromGradient(m1)+s1.tc;
+%         a = (quat2rotm(s1.q) * m1) ./norm(quat2rotm(s1.q) * m1);
     case 'closed-point'
         [flag, ~, pt_cls, condition] = collision_cfc(s1, s2, 'constrained');
         if flag && condition<1e-02
@@ -111,6 +120,8 @@ if isplot
         color = 'y';
     elseif strcmp(method, 'center-point')
         color = 'g';
+    elseif strcmp(method, 'center-point-cfc')
+        color = 'm';
     end
 %     visualize_bounding_ellip(s1,s2);
     plotPlane(a, x_mink, color);
@@ -164,16 +175,6 @@ r1 = -(n02 - (n02'*n01)*n01)' * (mink2-mink1) /...
 
 m1 = minkObj.s1.GetGradientsFromDirection(...
     R1'*(minkObj.s2.tc - minkObj.s1.tc) - (mink2 + r1) );
-end
-
-function plotPlane(a, x_mink, color)
-[x, y]= meshgrid(-1.5:0.1:1.5);
-
-zPlane = -a(1)/a(3) * x - a(2)/a(3)*y + a(1)/a(3)*x_mink(1) + a(2)/a(3)*x_mink(2) + x_mink(3);
-
-scatter3(x_mink(1), x_mink(2), x_mink(3), 'MarkerFaceColor', color);
-
-surf(x, y, zPlane, 'FaceColor', color, 'FaceAlpha', 0.5);
 end
 
 % Distance cost: distance from point to Minkowski sums boundary
