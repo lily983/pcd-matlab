@@ -21,6 +21,7 @@ error_b = {};
 error_Sigma = {};
 
 % GMF 5SG sets
+testProgress = waitbar(0, 'Starting test GMF3D upper bound for 5SG sets');
 for i = 1:n
     Sigma_matrix = quat2rotm(quatEllip(1, i))' * diag(semi_axes_square(:,i)) * quat2rotm(quatEllip(1,i));
     
@@ -38,9 +39,13 @@ for i = 1:n
         error_Sigma = [error_Sigma; Sigma(i)];
         error('Find non-upper bound')  
     end
+    
+    waitbar(i/n, testProgress, sprintf('Progress(GMF3D, 5SG): %d %%', floor(i/n*100)));
 end
+close(testProgress);
 
 % GMF 2SG sets
+testProgress = waitbar(0, 'Starting test GMF3D upper bound for 2SG sets');
 for i = 1:n
     Sigma_matrix = quat2rotm(quatEllip(1, i))' * diag(semi_axes_square(:,i)) * quat2rotm(quatEllip(1,i));
     
@@ -58,8 +63,10 @@ for i = 1:n
         error_Sigma = [error_Sigma; Sigma(i)];
         error('Find non-upper bound')  
     end
+    
+    waitbar(i/n, testProgress, sprintf('Progress(GMF3D, 5SG): %d %%', floor(i/n*100)));
 end
-
+close(testProgress);
 %% Functions
 % Indicator function in 3D: for ellipsoidal point sets
 function result = indicatorFunction(mu, Sigma, x, y, z)
