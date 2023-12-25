@@ -1,11 +1,11 @@
 clc;clear all; close all
 
 % n: generate n random Sigma
-n = 10;
+n = 100;
 Sigma = rand(n,1) * 5;
 
 % generate x samples
-x = -15:0.01:15;
+x = linspace(-15, 15, 1000);
 
 % here we ignore the center 
 mu = 0;
