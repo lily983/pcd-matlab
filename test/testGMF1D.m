@@ -19,7 +19,7 @@ error_Sigma = {};
 for i = 1:n
     [a, b] = get_gmm_param(Sigma(i), '5SG');
     
-    f = GMF(x', mu, Sigma(i), a, b, 1);
+    f = GMF(mu, Sigma, a, b, x');
     
     iota = rectangularPulse(-sqrt(Sigma(i)), sqrt(Sigma(i)), x);
     
@@ -37,7 +37,7 @@ end
 for i = 1:n
     [a, b] = get_gmm_param(Sigma(i), '2SG');
     
-    f = GMF(x', mu, Sigma(i), a, b, 1);
+    f = GMF(mu, Sigma, a, b, x');
     
     iota = rectangularPulse(-sqrt(Sigma(i)), sqrt(Sigma(i)), x);
     
@@ -51,4 +51,18 @@ for i = 1:n
     end
 end
 
+%% Function
+function y = GMF(mu, Sigma, a, b, x)
+sizeParameters = max(size(a));
 
+y = zeros(1, max(size(x)));
+
+for i = 1:sizeParameters
+    for j = 1:max(size(x))
+        y(j) = y(j) + a(i) * b(i)^(1/2) * exp( (-b(i)/2) * (x(j)-mu)' / Sigma * (x(j)-mu));
+    end
+end
+
+y = y ./ ( (2*pi)^(1/2) * det(Sigma)^0.5);
+
+end
