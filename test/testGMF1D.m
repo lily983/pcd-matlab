@@ -16,10 +16,11 @@ error_b = {};
 error_Sigma = {};
 
 % GMF 5SG sets
+testProgress = waitbar(0, 'Starting test GMF1D upper bound for 5SG sets');
 for i = 1:n
     [a, b] = get_gmm_param(Sigma(i), '5SG');
     
-    f = GMF(mu, Sigma, a, b, x');
+    f = GMF(mu, Sigma(i), a, b, x');
     
     iota = rectangularPulse(-sqrt(Sigma(i)), sqrt(Sigma(i)), x);
     
@@ -31,13 +32,16 @@ for i = 1:n
         error_Sigma = [error_Sigma; Sigma(i)];
         error('Find non-upper bound')
     end
+    waitbar(i/n, testProgress, sprintf('Progress(GMF1D, 5SG): %d %%', floor(i/n*100)));
 end
+close(testProgress);
 
 % GMF 2SG sets
+testProgress = waitbar(0, 'Starting test GMF1D upper bound for 2SG sets');
 for i = 1:n
     [a, b] = get_gmm_param(Sigma(i), '2SG');
     
-    f = GMF(mu, Sigma, a, b, x');
+    f = GMF(mu, Sigma(i), a, b, x');
     
     iota = rectangularPulse(-sqrt(Sigma(i)), sqrt(Sigma(i)), x);
     
@@ -49,8 +53,9 @@ for i = 1:n
         error_Sigma = [error_Sigma; Sigma(i)];
         error('Find non-upper bound')
     end
+    waitbar(i/n, testProgress, sprintf('Progress(GMF1D, 5SG): %d %%', floor(i/n*100)));
 end
-
+close(testProgress);
 %% Function
 function y = GMF(mu, Sigma, a, b, x)
 sizeParameters = max(size(a));
