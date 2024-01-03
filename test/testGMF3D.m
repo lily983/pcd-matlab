@@ -64,7 +64,7 @@ for i = 1:n
         error('Find non-upper bound')  
     end
     
-    waitbar(i/n, testProgress, sprintf('Progress(GMF3D, 5SG): %d %%', floor(i/n*100)));
+    waitbar(i/n, testProgress, sprintf('Progress(GMF3D, 2SG): %d %%', floor(i/n*100)));
 end
 close(testProgress);
 %% Functions
