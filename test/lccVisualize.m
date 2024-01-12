@@ -26,12 +26,12 @@ patch(mSum.Vertices(:,1), mSum.Vertices(:,2), hex2rgb('93c47d'), 'FaceAlpha', 0.
 
 % plot the bounding ellipsoid for the Minkowksi sum
 [mf, Sigmaf] = get_bounding_ellip(s1, s2);
-[U, Lamda] = svd(Sigmaf);
+[U_Sigmaf, Lamda_Sigmaf] = svd(Sigmaf);
 
-s3 = SuperEllipse([s2.a(1), s2.a(2), s2.eps, s2.taper...
+s3 = SuperEllipse([s2.a(1), s2.a(2), 1, 0,...
             s2.tc(1), s2.tc(2), s2.ang, s2.N]);
-s3.a = sqrt(diag(Lamda));
-s3.ang = rotm2angle(U);
+s3.a = sqrt(diag(Lamda_Sigmaf));
+s3.ang = rotm2angle(U_Sigmaf);
 s3.tc = mf;
 s3.N=100;
 s3.PlotShape(hex2rgb('f44336'), 0.0, 1.0); %red
@@ -62,7 +62,7 @@ xx = s2.tc - s1.tc;
 Sigmax =Sigma1+Sigma2;
 
 % Here Sigmax_T is a diagonal matrix for simplification
-sx_a = 1./diag(sqrtm(Sigmax))';
+sx_a = diag(sqrtm(Sigmax))';
 sx = SuperEllipse([sx_a, 1, 0,...
             xx(1), xx(2), 0, s2.N]);
 
@@ -159,8 +159,8 @@ axis equal
 figure; hold on;
 
 % plot bounding ellip
-s3.a = sqrt(diag(Lamda));
-s3.ang = rotm2angle(U);
+s3.a = sqrt(diag(Lamda_Sigmaf));
+s3.ang = rotm2angle(U_Sigmaf);
 s3.PlotShape(hex2rgb('f44336'), 0.0, 1.0); 
 
 % plot minksum
