@@ -60,6 +60,8 @@ end
 % Plot the relative position error
 xx = s2.tc - s1.tc;
 Sigmax =Sigma1+Sigma2;
+
+% Here Sigmax_T is a diagonal matrix for simplification
 sx = SuperEllipse([1./diag(sqrtm(Sigmax))', 1, 0,...
             xx(1), xx(2), 0, s2.N]);
 
@@ -100,8 +102,12 @@ scatter(xx_T(1), xx_T(2), 'MarkerFaceColor', hex2rgb('714bd2'),...
  'MarkeredgeColor', hex2rgb('0b5394'), 'SizeData', 20);
 
 Sigmax_T = Sigmaf^0.5 \ Sigmax / Sigmaf^0.5;
-sx_T = SuperEllipse([1./diag(sqrtm(Sigmax_T))', 1, 0,...
-            xx_T(1), xx_T(2), 0, s2.N]);
+
+% Here Sigmax_T is not a diagonal matrix
+[R_Sigmax_T, Lamda_Sigmax_T ,~] = svd(Sigmax_T);
+sx_T = SuperEllipse([1./sqrt(diag(Lamda_Sigmax_T))', 1, 0,...
+            xx_T(1), xx_T(2), rotm2angle(R_Sigmax_T), s2.N]);
+        
 i=1;
 while i<=2
 %     sx_T.PlotShape(hex2rgb('714bd2'), 0.0, 1.0); %purple
