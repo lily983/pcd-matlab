@@ -62,16 +62,19 @@ xx = s2.tc - s1.tc;
 Sigmax =Sigma1+Sigma2;
 
 % Here Sigmax_T is a diagonal matrix for simplification
-sx = SuperEllipse([1./diag(sqrtm(Sigmax))', 1, 0,...
+sx_a = 1./diag(sqrtm(Sigmax))';
+sx = SuperEllipse([sx_a, 1, 0,...
             xx(1), xx(2), 0, s2.N]);
 
 scatter(xx(1), xx(2), 'MarkerFaceColor', hex2rgb('714bd2'),...
  'MarkeredgeColor', hex2rgb('714bd2'), 'SizeData', 20);
+
+% plot contour of position error
 i=1;
-while i<=3
+while i<=4
     sx.PlotShape(hex2rgb('714bd2'), 0.0, 1.0); %purple
-    sx.a = 1./diag(sqrtm(Sigmax./(3^i)))';
     i = i+1;
+    sx.a = sx_a .* 1.5^i;
 end
 
 % Put axes center at the origin
@@ -105,15 +108,17 @@ Sigmax_T = Sigmaf^0.5 \ Sigmax / Sigmaf^0.5;
 
 % Here Sigmax_T is not a diagonal matrix
 [R_Sigmax_T, Lamda_Sigmax_T ,~] = svd(Sigmax_T);
-sx_T = SuperEllipse([1./sqrt(diag(Lamda_Sigmax_T))', 1, 0,...
+sx_T_a = 1./sqrt(diag(Lamda_Sigmax_T))';
+
+sx_T = SuperEllipse([sx_T_a, 1, 0,...
             xx_T(1), xx_T(2), rotm2angle(R_Sigmax_T), s2.N]);
-        
+
+% plot contour of position error
 i=1;
-while i<=2
-%     sx_T.PlotShape(hex2rgb('714bd2'), 0.0, 1.0); %purple
-    sx_T.a = 1./diag(sqrtm(Sigmax_T./(0.3^i)))';
-    sx_T.PlotShape(hex2rgb('0b5394'), 0.0, 1.0); %purple
+while i<=3
+    sx_T.PlotShape(hex2rgb('714bd2'), 0.0, 1.0); %purple
     i = i+1;
+    sx_T.a =  sx_T_a .* 0.5^i;
 end
 
 % plot tangent line
@@ -164,11 +169,15 @@ patch(mSum.Vertices(:,1), mSum.Vertices(:,2), hex2rgb('93c47d'), 'FaceAlpha', 0.
 % Plot relative position error
 scatter(xx(1), xx(2), 'MarkerFaceColor', hex2rgb('714bd2'),...
  'MarkeredgeColor', hex2rgb('714bd2'), 'SizeData', 20);
+
+sx = SuperEllipse([1./diag(sqrtm(Sigmax))', 1, 0,...
+            xx(1), xx(2), 0, s2.N]);
+% plot contour of position error
 i=1;
-while i<=3
+while i<=4
     sx.PlotShape(hex2rgb('714bd2'), 0.0, 1.0); %purple
-    sx.a = 1./diag(sqrtm(Sigmax./(3^i)))';
     i = i+1;
+    sx.a = sx_a .* 1.5^i;
 end
 
 % plot line from origin to xx
