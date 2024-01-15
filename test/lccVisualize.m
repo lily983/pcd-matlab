@@ -194,7 +194,7 @@ norm_plane = (Sigmaf \ xx) ./ norm(Sigmaf \ xx);
 b_plane = x_mink'*norm_plane;
 
 % plot norm at x_mink
-quiver(x_mink(1), x_mink(2), norm_plane(1) + x_mink(1), norm_plane(2) + x_mink(2),1, ...
+quiver(x_mink(1), x_mink(2), norm_plane(1), norm_plane(2),1, ...
     'color', tangent_color, 'LineWidth', 1, 'MaxHeadSize', 1);
 
 x = linspace(-8, 20, 1000);
