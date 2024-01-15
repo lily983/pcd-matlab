@@ -25,7 +25,7 @@ mSum = minkowskiSum(pgon1, pgon2);
 patch(mSum.Vertices(:,1), mSum.Vertices(:,2), hex2rgb('93c47d'), 'FaceAlpha', 0.5, 'EdgeAlpha', 0.0);
 
 % First get an bounding ellipse for the Minkowski sum
-[invSigmaf, mf] = MinVolEllipse(mSum.Vertices', 0.001)
+[invSigmaf, mf] = MinVolEllipse(mSum.Vertices', 0.001);
 Sigmaf = inv(invSigmaf);
 [R_Sigmaf, Lamda_Sigmaf,~] = svd(Sigmaf);
 
@@ -60,9 +60,8 @@ end
 % Plot the relative position error
 xx = s2.tc - s1.tc;
 Sigmax =Sigma1+Sigma2;
+xx_color = hex2rgb('0b5394');
 
-% Here Sigmax is simplified to be a diagonal matrix, so we can use diag()
-% to get the value
 [R_Sigmax, Lamda_Sigmax,~] = svd(Sigmax);
 sx_a = sqrt(diag(Lamda_Sigmax))';
 
@@ -70,13 +69,14 @@ sx = SuperEllipse([sx_a, 1, 0,...
             xx(1), xx(2), rotm2angle(R_Sigmax), s2.N]);
 
 scatter(xx(1), xx(2), 'MarkerFaceColor', hex2rgb('714bd2'),...
- 'MarkeredgeColor', hex2rgb('714bd2'), 'SizeData', 20);
+ 'MarkeredgeColor', xx_color, 'SizeData', 20);
 i=1;
 while i<=3
-    sx.PlotShape(hex2rgb('714bd2'), 0.0, 1.0); %purple
+    sx.PlotShape(xx_color, 0.0, 1.0); %purple
     i = i+1;
     sx.a = sx_a .* 1.5^i;
 end
+sx.a = sx_a;
 
 % Put axes center at the origin
 ax = gca;
@@ -89,24 +89,26 @@ axis equal
 % space transformation inv(Sigmaf)^0.5
 figure; hold on;
 
-% First get an bounding ellipsoid for the Minkowski sum
-[invSigmaf, mf] = MinVolEllipse(mSum.Vertices', 0.001)
-Sigmaf = inv(invSigmaf);
-[R_Sigmaf, Lamda_Sigmaf,~] = svd(Sigmaf);
-
-s3_a = sqrt(diag(Lamda_Sigmaf))';
-s3 = SuperEllipse([s3_a, 1, 0,...
-            mf(1), mf(2), rotm2angle(R_Sigmaf), s2.N]);
+% % First get an bounding ellipsoid for the Minkowski sum
+% [invSigmaf, mf] = MinVolEllipse(mSum.Vertices', 0.001)
+% Sigmaf = inv(invSigmaf);
+% [R_Sigmaf, Lamda_Sigmaf,~] = svd(Sigmaf);
+% 
+% s3_a = sqrt(diag(Lamda_Sigmaf))';
+% s3 = SuperEllipse([s3_a, 1, 0,...
+%             mf(1), mf(2), rotm2angle(R_Sigmaf), s2.N]);
         
 % transformed bounding ellip
 Sigmaf_T = Sigmaf^0.5 \ Sigmaf / Sigmaf^0.5;
 [R_Sigmaf_T, Lamda_Sigmaf_T] = svd(Sigmaf_T);
 
-s3.a = sqrt(diag(Lamda_Sigmaf_T));
-s3.ang = rotm2angle(R_Sigmaf_T);
-s3.tc = Sigmaf^0.5 \ s3.tc;
+s3_T = SuperEllipse([s3_a, 1, 0,...
+            mf(1), mf(2), rotm2angle(R_Sigmaf), s2.N]); 
+s3_T.a = sqrt(diag(Lamda_Sigmaf_T));
+s3_T.ang = rotm2angle(R_Sigmaf_T);
+s3_T.tc = Sigmaf^0.5 \ s3_T.tc;
 % If transformed s3 is not a sphere, then check the transformation
-s3.PlotShape(hex2rgb('f44336'), 0.0, 1.0); 
+s3_T.PlotShape(hex2rgb('f44336'), 0.0, 1.0); 
 
 % transformed Minkowski sum
 mSum_T=  Sigmaf^0.5 \ [mSum.Vertices(:,1), mSum.Vertices(:,2)]';
@@ -115,7 +117,7 @@ patch(mSum_T(1, :), mSum_T(2, :), hex2rgb('93c47d'), 'FaceAlpha', 0.5, 'EdgeAlph
 % transformed relative position error
 xx_T = Sigmaf^0.5 \ xx;
 scatter(xx_T(1), xx_T(2), 'MarkerFaceColor', hex2rgb('714bd2'),...
- 'MarkeredgeColor', hex2rgb('0b5394'), 'SizeData', 20);
+ 'MarkeredgeColor', xx_color, 'SizeData', 20);
 
 Sigmax_T = Sigmaf^0.5 \ Sigmax / Sigmaf^0.5;
 
@@ -130,7 +132,7 @@ i=6;
 while i<=8
     i = i+1;
     sx_T.a =  sx_T_a .* 0.7^i;
-    sx_T.PlotShape(hex2rgb('0b5394'), 0.0, 1.0); %purple
+    sx_T.PlotShape(xx_color, 0.0, 1.0); %purple
 end
 
 % plot tangent line
@@ -149,21 +151,21 @@ plot(x, y, 'color',tangent_color); %light yellow
 scatter(xx_T_N(1), xx_T_N(2), 'MarkerFaceColor', tangent_color,...
  'MarkeredgeColor', tangent_color, 'SizeData', 30);
 
-% plot the half space
-[xymi,xymax]=bounds([x; y]',1);
-x_h=linspace(xymi(1),xymax(1),50);
-y_h=linspace(xymi(2),xymax(2),50);
-[X_H,Y_H]=meshgrid(x_h, y_h);
-XY=[X_H(:),Y_H(:)].';
-inside = all(xx_T_N' * XY -1<=0, 1);
-plot(XY(1,inside),XY(2,inside),'.', 'color', tangent_color);
+% % plot the half space
+% [xymi,xymax]=bounds([x; y]',1);
+% x_h=linspace(xymi(1),xymax(1),50);
+% y_h=linspace(xymi(2),xymax(2),50);
+% [X_H,Y_H]=meshgrid(x_h, y_h);
+% XY=[X_H(:),Y_H(:)].';
+% inside = all(xx_T_N' * XY -1<=0, 1);
+% plot(XY(1,inside),XY(2,inside),'.', 'color', tangent_color);
 
 % Put axes center at the origin
 ax = gca;
 ax.XAxisLocation = 'origin';
 ax.YAxisLocation = 'origin';
 ax.FontSize = 8;
-ax.XLim = [-1.5, 1.5];
+ax.XLim = [-2, 2];
 ax.YLim = [-1.5, 2.5];
 axis equal
 
@@ -171,8 +173,6 @@ axis equal
 figure; hold on;
 
 % plot bounding ellip
-s3.a = s3_a;
-s3.ang = rotm2angle(R_Sigmaf);
 s3.PlotShape(hex2rgb('f44336'), 0.0, 1.0); 
 
 % plot minksum
@@ -180,14 +180,15 @@ patch(mSum.Vertices(:,1), mSum.Vertices(:,2), hex2rgb('93c47d'), 'FaceAlpha', 0.
 
 % Plot relative position error
 scatter(xx(1), xx(2), 'MarkerFaceColor', hex2rgb('714bd2'),...
- 'MarkeredgeColor', hex2rgb('714bd2'), 'SizeData', 20);
+ 'MarkeredgeColor', xx_color, 'SizeData', 20);
 
 i=1;
 while i<=3
-    sx.PlotShape(hex2rgb('714bd2'), 0.0, 1.0); %purple
+    sx.PlotShape(xx_color, 0.0, 1.0); %purple
     i = i+1;
     sx.a = sx_a .* 1.5^i;
 end
+sx.a = sx_a;
 
 % plot line from origin to xx
 plot([0, xx(1)], [0, xx(2)], '--')
@@ -195,7 +196,7 @@ plot([0, xx(1)], [0, xx(2)], '--')
 % plot intersection point
 % here x_mink is by observation
 x_mink = [3.2; 8.97357];
-scatter(x_mink(1), x_mink(2), '*', 'SizeData', 150, 'MarkeredgeColor', hex2rgb('f44336'));
+% scatter(x_mink(1), x_mink(2), '*', 'SizeData', 150, 'MarkeredgeColor', hex2rgb('f44336'));
 
 % plot intersection point
 xx = s2.tc - s1.tc;
@@ -208,28 +209,28 @@ norm_plane = (Sigmaf \ xx) ./ norm(Sigmaf \ xx);
 b_plane = x_mink'*norm_plane;
 
 % plot norm at x_mink
-quiver(x_mink(1), x_mink(2), norm_plane(1) + x_mink(1), norm_plane(2) + x_mink(2),1, ...
-    'color', tangent_color, 'LineWidth', 1, 'MaxHeadSize', 1);
-
-x = linspace(-200, 200, 5000);
-y = b_plane/norm_plane(2) - norm_plane(1)/norm_plane(2)*x;
-plot(x, y, 'color',tangent_color); %light yellow
+quiver(x_mink(1), x_mink(2), norm_plane(1), norm_plane(2),5, ...
+    'color', tangent_color, 'LineWidth', 0.8, 'MaxHeadSize', 1);
 
 % plot the half space
-[xymi,xymax]=bounds([x; y]',1);
-x_h=linspace(xymi(1),xymax(1),40);
-y_h=linspace(xymi(2),xymax(2),40);
-[X_H,Y_H]=meshgrid(x_h, y_h);
-XY=[X_H(:),Y_H(:)].';
-inside = all(norm_plane' * XY - b_plane<=0, 1);
-plot(XY(1,inside),XY(2,inside),'.', 'color', tangent_color);
+x = -200:0.01:200;
+y = b_plane/norm_plane(2) - norm_plane(1)/norm_plane(2)*x;
+plot(x, y, 'color',tangent_color); %light yellow
+% 
+% [xymi,xymax]=bounds([x; y]',1);
+% x_h=linspace(xymi(1),xymax(1),40);
+% y_h=linspace(xymi(2),xymax(2),40);
+% [X_H,Y_H]=meshgrid(x_h, y_h);
+% XY=[X_H(:),Y_H(:)].';
+% inside = all(norm_plane' * XY - b_plane<=0, 1);
+% plot(XY(1,inside),XY(2,inside),'.', 'color', tangent_color);
 
 % Put axes center at the origin
 ax = gca;
 ax.XAxisLocation = 'origin';
 ax.YAxisLocation = 'origin';
 ax.FontSize = 8;
-ax.XLim = [-12, 12];
+ax.XLim = [-15, 15];
 ax.YLim = [-12, 25];
 axis equal
 
@@ -237,8 +238,6 @@ axis equal
 figure; hold on;
 
 % plot bounding ellip
-s3.a = s3_a;
-s3.ang = rotm2angle(R_Sigmaf);
 s3.PlotShape(hex2rgb('f44336'), 0.0, 1.0); 
 
 % plot minksum
@@ -246,25 +245,81 @@ patch(mSum.Vertices(:,1), mSum.Vertices(:,2), hex2rgb('93c47d'), 'FaceAlpha', 0.
 
 % Plot relative position error
 scatter(xx(1), xx(2), 'MarkerFaceColor', hex2rgb('714bd2'),...
- 'MarkeredgeColor', hex2rgb('714bd2'), 'SizeData', 20);
+ 'MarkeredgeColor', xx_color, 'SizeData', 20);
 
 i=1;
 while i<=3
-    sx.PlotShape(hex2rgb('714bd2'), 0.0, 1.0); %purple
+    sx.PlotShape(xx_color, 0.0, 1.0); %purple
     i = i+1;
     sx.a = sx_a .* 1.5^i;
 end
+sx.a = sx_a;
 
 % plot line from origin to xx
 plot([0, xx(1)], [0, xx(2)], '--')
 
-% plot intersection point
-% here x_mink is by observation
-x_mink = [3.2; 8.97357];
+% % % Given x_mink, calculate gradient and then normal at x_mink
+% % % plot intersection point
+% % % here x_mink is by observation
+% % x_mink = [3.2; 8.97357];
+% % scatter(x_mink(1), x_mink(2), '*', 'SizeData', 150, 'MarkeredgeColor', hex2rgb('f44336'));
+% % 
+% % % get gradient m1 of s1 at x_mink (Noted m1 is defined in the original
+% % % space of s1, will need to be transformed to get value at current space)
+% % syms m11 m12
+% % m1_original =[m11, m12]';
+% % 
+% % % Constuct MinkSumClosedForm of s1 and s2
+% % minkSum = MinkSumClosedForm(s1, s2, angle2rotm(s1.ang),angle2rotm(s2.ang));
+% % 
+% % % Get points from m1
+% % x_mink_m1 = minkSum.GetMinkSumFromGradient(m1_original);
+% % 
+% % % solve m11 m12
+% % eqns = x_mink_m1 == x_mink;
+% % solution = vpasolve(eqns, [m11 m12]);
+% % 
+% % m1_original = double([solution.m11; solution.m12]);
+% % 
+% % % get m1 in current space
+% % m1_current = angle2rotm(s1.ang)' \ m1_original;
+% % 
+% % % get norm
+% % norm_plane = m1_current./norm(m1_current);
+
+% % Given objective, find x_mink(gradient, norm) 
+% Constuct MinkSumClosedForm of s1 and s2
+minkSum = MinkSumClosedForm(s1, s2, angle2rotm(s1.ang),angle2rotm(s2.ang));
+
+% the intersection point should lie at the same line as origin to xx 
+xx_norm = xx./norm(xx);
+
+% option = optimoptions('lsqnonlin',...
+%             'Algorithm', 'levenberg-marquardt',...
+%             'display', 'iter',...
+%             'FunctionTolerance', 1e-8,...
+%             'OptimalityTolerance', 1e-8);
+% 
+% psi_opt = lsqnonlin(@(psi) func_lsq(psi, minkSum, xx_norm), 0,...
+%     [], [], option);
+% Solution gradient in local frame
+% m_opt = s1.GetGradientFromAngle(psi_opt);
+
+option = optimoptions('fmincon', 'Algorithm', 'interior-point',...
+            'display', 'none');
+m_opt = fmincon(@(m) func_con(m, minkSum, xx_norm), xx_norm,...
+    [], [], [], [], [], [], @(m) nlcon(m, minkSum, xx_norm), option);
+
+% Get x_mink
+x_mink = minkSum.GetMinkSumFromGradient(m_opt);
+
 scatter(x_mink(1), x_mink(2), '*', 'SizeData', 150, 'MarkeredgeColor', hex2rgb('f44336'));
 
-% get norm at x_mink
-norm_plane
+% get m1 in current space
+m1_current = angle2rotm(s1.ang)' \ m_opt;
+
+% get norm
+norm_plane = m1_current./norm(m1_current);
 
 % plot tangent plane
 tangent_color = hex2rgb('a64d79');
@@ -272,21 +327,21 @@ tangent_color = hex2rgb('a64d79');
 b_plane = x_mink'*norm_plane;
 
 % plot norm at x_mink
-quiver(x_mink(1), x_mink(2), norm_plane(1) + x_mink(1), norm_plane(2) + x_mink(2),1, ...
+quiver(x_mink(1), x_mink(2), norm_plane(1), norm_plane(2),5, ...
     'color', tangent_color, 'LineWidth', 1, 'MaxHeadSize', 1);
 
 x = linspace(-40, 40, 1000);
 y = b_plane/norm_plane(2) - norm_plane(1)/norm_plane(2)*x;
 plot(x, y, 'color',tangent_color); %light yellow
 
-% plot the half space
-[xymi,xymax]=bounds([x; y]',1);
-x_h=linspace(xymi(1),xymax(1),40);
-y_h=linspace(xymi(2),xymax(2),40);
-[X_H,Y_H]=meshgrid(x_h, y_h);
-XY=[X_H(:),Y_H(:)].';
-inside = all(norm_plane' * XY - b_plane<=0, 1);
-plot(XY(1,inside),XY(2,inside),'.', 'color', tangent_color);
+% % plot the half space
+% [xymi,xymax]=bounds([x; y]',1);
+% x_h=linspace(xymi(1),xymax(1),40);
+% y_h=linspace(xymi(2),xymax(2),40);
+% [X_H,Y_H]=meshgrid(x_h, y_h);
+% XY=[X_H(:),Y_H(:)].';
+% inside = all(norm_plane' * XY - b_plane<=0, 1);
+% plot(XY(1,inside),XY(2,inside),'.', 'color', tangent_color);
 
 % Put axes center at the origin
 ax = gca;
@@ -296,3 +351,34 @@ ax.FontSize = 8;
 ax.XLim = [-12, 12];
 ax.YLim = [-12, 25];
 axis equal
+
+%% optimization functions
+% Least squares optimization cost
+function F = func_lsq(psi, minkSum, xx)
+m = minkSum.s1.GetGradientFromAngle(psi);
+
+x_mink = minkSum.GetMinkSumFromGradient(m);
+
+F = norm(x_mink) - x_mink' * xx;
+end
+
+% Constrained optimization cost and constraint
+% vector angle cost: find x_mink at the line xx
+function F = func_con(m, minkObj, xx)
+x_mink = minkObj.GetMinkSumFromGradient(m);
+
+% Cost function
+F = norm(x_mink) - x_mink' * xx;
+end
+
+% Nonlinear constraint: x_mink and xx angle less then pi/2
+function [c,ceq] = nlcon(m, minkObj, xx)
+x_mink = minkObj.GetMinkSumFromGradient(m);
+% inequality constraint: x_mink and xx angle less then pi/2
+% c = -1 * x_mink' * xx;
+c=[];
+% equality constraint: x on the surface
+x = minkObj.s1.GetPointsFromGradient(m);
+ceq = minkObj.s1.GetImplicitFunction(x);
+end
+
