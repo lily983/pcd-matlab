@@ -37,7 +37,7 @@ s3.N=100;
 s3.PlotShape(hex2rgb('f44336'), 0.0, 1.0); %red
 
 % plot position error
-Sigma1 = [1, 0; 0, 9]*1e-01;
+Sigma1 = [1, 2; 2, 9]*1e-01;
 Sigma2 = [8, 0; 0, 8] * 1e-01;
 
 n = 20;
@@ -61,10 +61,10 @@ end
 xx = s2.tc - s1.tc;
 Sigmax =Sigma1+Sigma2;
 
-% Here Sigmax_T is a diagonal matrix for simplification
-sx_a = diag(sqrtm(Sigmax))';
+[R_Sigmax, Lamda_Sigmax,~] = svd(Sigmax);
+sx_a = sqrt(diag(Lamda_Sigmax))';
 sx = SuperEllipse([sx_a, 1, 0,...
-            xx(1), xx(2), 0, s2.N]);
+            xx(1), xx(2), rotm2angle(R_Sigmax), s2.N]);
 
 scatter(xx(1), xx(2), 'MarkerFaceColor', hex2rgb('714bd2'),...
  'MarkeredgeColor', hex2rgb('714bd2'), 'SizeData', 20);
@@ -76,6 +76,7 @@ while i<=4
     i = i+1;
     sx.a = sx_a .* 1.5^i;
 end
+sx.a = sx_a ;
 
 % Put axes center at the origin
 ax = gca;
@@ -137,14 +138,14 @@ plot(x, y, 'color',tangent_color); %light yellow
 scatter(xx_T_N(1), xx_T_N(2), 'MarkerFaceColor', tangent_color,...
  'MarkeredgeColor', tangent_color, 'SizeData', 30);
 
-% plot the half space
-[xymi,xymax]=bounds([x; y]',1);
-x_h=linspace(xymi(1),xymax(1),33);
-y_h=linspace(xymi(2),xymax(2),33);
-[X_H,Y_H]=meshgrid(x_h, y_h);
-XY=[X_H(:),Y_H(:)].';
-inside = all(xx_T_N' * XY -1<=0, 1);
-plot(XY(1,inside),XY(2,inside),'.', 'color', tangent_color);
+% % plot the half space
+% [xymi,xymax]=bounds([x; y]',1);
+% x_h=linspace(xymi(1),xymax(1),33);
+% y_h=linspace(xymi(2),xymax(2),33);
+% [X_H,Y_H]=meshgrid(x_h, y_h);
+% XY=[X_H(:),Y_H(:)].';
+% inside = all(xx_T_N' * XY -1<=0, 1);
+% plot(XY(1,inside),XY(2,inside),'.', 'color', tangent_color);
 
 % Put axes center at the origin
 ax = gca;
@@ -170,8 +171,6 @@ patch(mSum.Vertices(:,1), mSum.Vertices(:,2), hex2rgb('93c47d'), 'FaceAlpha', 0.
 scatter(xx(1), xx(2), 'MarkerFaceColor', hex2rgb('714bd2'),...
  'MarkeredgeColor', hex2rgb('714bd2'), 'SizeData', 20);
 
-sx = SuperEllipse([1./diag(sqrtm(Sigmax))', 1, 0,...
-            xx(1), xx(2), 0, s2.N]);
 % plot contour of position error
 i=1;
 while i<=4
@@ -179,6 +178,7 @@ while i<=4
     i = i+1;
     sx.a = sx_a .* 1.5^i;
 end
+sx.a = sx_a ;
 
 % plot line from origin to xx
 plot([0, xx(1)], [0, xx(2)], '--')
@@ -194,21 +194,21 @@ norm_plane = (Sigmaf \ xx) ./ norm(Sigmaf \ xx);
 b_plane = x_mink'*norm_plane;
 
 % plot norm at x_mink
-quiver(x_mink(1), x_mink(2), norm_plane(1), norm_plane(2),1, ...
+quiver(x_mink(1), x_mink(2), norm_plane(1), norm_plane(2),5, ...
     'color', tangent_color, 'LineWidth', 1, 'MaxHeadSize', 1);
 
 x = linspace(-8, 20, 1000);
 y = b_plane/norm_plane(2) - norm_plane(1)/norm_plane(2)*x;
 plot(x, y, 'color',tangent_color); %light yellow
 
-% plot the half space
-[xymi,xymax]=bounds([x; y]',1);
-x_h=linspace(xymi(1),xymax(1),40);
-y_h=linspace(xymi(2),xymax(2),40);
-[X_H,Y_H]=meshgrid(x_h, y_h);
-XY=[X_H(:),Y_H(:)].';
-inside = all(norm_plane' * XY - b_plane<=0, 1);
-plot(XY(1,inside),XY(2,inside),'.', 'color', tangent_color);
+% % plot the half space
+% [xymi,xymax]=bounds([x; y]',1);
+% x_h=linspace(xymi(1),xymax(1),40);
+% y_h=linspace(xymi(2),xymax(2),40);
+% [X_H,Y_H]=meshgrid(x_h, y_h);
+% XY=[X_H(:),Y_H(:)].';
+% inside = all(norm_plane' * XY - b_plane<=0, 1);
+% plot(XY(1,inside),XY(2,inside),'.', 'color', tangent_color);
 
 % Put axes center at the origin
 ax = gca;
