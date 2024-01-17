@@ -61,22 +61,12 @@ end
 xx = s2.tc - s1.tc;
 Sigmax =Sigma1+Sigma2;
 
-[R_Sigmax, Lamda_Sigmax,~] = svd(Sigmax);
-sx_a = sqrt(diag(Lamda_Sigmax))';
-sx = SuperEllipse([sx_a, 1, 0,...
-            xx(1), xx(2), rotm2angle(R_Sigmax), s2.N]);
-
+% plot position error ellipse
+position_error_color = hex2rgb('714bd2');
 scatter(xx(1), xx(2), 'MarkerFaceColor', hex2rgb('714bd2'),...
- 'MarkeredgeColor', hex2rgb('714bd2'), 'SizeData', 20);
-
-% plot contour of position error
-i=1;
-while i<=4
-    sx.PlotShape(hex2rgb('714bd2'), 0.0, 1.0); %purple
-    i = i+1;
-    sx.a = sx_a .* 1.5^i;
-end
-sx.a = sx_a ;
+ 'MarkeredgeColor', position_error_color, 'SizeData', 20);
+plot_ellipse(Sigmax, xx, 'confidence', 0.5, 'edgecolor', position_error_color)
+plot_ellipse(Sigmax, xx, 'confidence', 0.99, 'edgecolor', position_error_color)
 
 % Put axes center at the origin
 ax = gca;
@@ -102,41 +92,31 @@ patch(mSum_T(1, :), mSum_T(2, :), hex2rgb('93c47d'), 'FaceAlpha', 0.5, 'EdgeAlph
 
 % transformed relative position error
 xx_T = Sigmaf^0.5 \ xx;
-scatter(xx_T(1), xx_T(2), 'MarkerFaceColor', hex2rgb('714bd2'),...
- 'MarkeredgeColor', hex2rgb('0b5394'), 'SizeData', 20);
-
 Sigmax_T = Sigmaf^0.5 \ Sigmax / Sigmaf^0.5;
 
-% Here Sigmax_T is not a diagonal matrix
-[R_Sigmax_T, Lamda_Sigmax_T ,~] = svd(Sigmax_T);
-sx_T_a = 1./sqrt(diag(Lamda_Sigmax_T))';
-
-sx_T = SuperEllipse([sx_T_a, 1, 0,...
-            xx_T(1), xx_T(2), rotm2angle(R_Sigmax_T), s2.N]);
-
-% plot contour of position error
-i=1;
-while i<=3
-    sx_T.PlotShape(hex2rgb('714bd2'), 0.0, 1.0); %purple
-    i = i+1;
-    sx_T.a =  sx_T_a .* 0.5^i;
-end
+% plot position error ellipse
+scatter(xx_T(1), xx_T(2), 'MarkerFaceColor', hex2rgb('714bd2'),...
+ 'MarkeredgeColor', position_error_color, 'SizeData', 20);
+plot_ellipse(Sigmax_T, xx_T, 'confidence', 0.5, 'edgecolor', position_error_color)
+plot_ellipse(Sigmax_T, xx_T, 'confidence', 0.99, 'edgecolor', position_error_color)
 
 % plot tangent line
 tangent_color = hex2rgb('a64d79');
 
-% plot vector from origin to xx_T
-quiver(0, 0, xx_T(1), xx_T(2), 1, ...
+% plot line from origin to xx
+plot([0, xx_T(1)], [0, xx_T(2)], '--')
+
+% plot intersection point
+x_mink_T = xx_T./norm(xx_T);
+scatter(x_mink_T(1), x_mink_T(2), '*', 'SizeData', 150, 'MarkeredgeColor', hex2rgb('f44336'));
+
+% plot vector from x_mink to xx_T
+quiver(x_mink_T(1), x_mink_T(2), xx_T(1), xx_T(2), 0.8, ...
     'color', tangent_color, 'LineWidth', 1, 'MaxHeadSize', 1);
 
 x = linspace(-4, 6, 1000);
-xx_T_N = xx_T./norm(xx_T);
-y = 1/xx_T_N(2) - xx_T_N(1)/xx_T_N(2)*x;
+y = 1/x_mink_T(2) - x_mink_T(1)/x_mink_T(2)*x;
 plot(x, y, 'color',tangent_color); %light yellow
-
-% plot points on Minkowski sum
-scatter(xx_T_N(1), xx_T_N(2), 'MarkerFaceColor', tangent_color,...
- 'MarkeredgeColor', tangent_color, 'SizeData', 30);
 
 % % plot the half space
 % [xymi,xymax]=bounds([x; y]',1);
@@ -167,18 +147,11 @@ s3.PlotShape(hex2rgb('f44336'), 0.0, 1.0);
 % plot minksum
 patch(mSum.Vertices(:,1), mSum.Vertices(:,2), hex2rgb('93c47d'), 'FaceAlpha', 0.5, 'EdgeAlpha', 0.0);
 
-% Plot relative position error
+% plot position error ellipse
 scatter(xx(1), xx(2), 'MarkerFaceColor', hex2rgb('714bd2'),...
- 'MarkeredgeColor', hex2rgb('714bd2'), 'SizeData', 20);
-
-% plot contour of position error
-i=1;
-while i<=4
-    sx.PlotShape(hex2rgb('714bd2'), 0.0, 1.0); %purple
-    i = i+1;
-    sx.a = sx_a .* 1.5^i;
-end
-sx.a = sx_a ;
+ 'MarkeredgeColor', position_error_color, 'SizeData', 20);
+plot_ellipse(Sigmax, xx, 'confidence', 0.5, 'edgecolor', position_error_color)
+plot_ellipse(Sigmax, xx, 'confidence', 0.99, 'edgecolor', position_error_color)
 
 % plot line from origin to xx
 plot([0, xx(1)], [0, xx(2)], '--')
