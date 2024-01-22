@@ -13,7 +13,7 @@ switch distribution
     case 'small'
         scaleValue = 4e-04;
     case 'large'
-        scaleValue = 2e-03;
+        scaleValue = 6e-03;
     case 'none'
         scaleValue = 0;
 end
