@@ -15,7 +15,8 @@ function results = getResultsR3(sampleNumber, objectType, Sigma1, Sigma2, keySet
 
 f = waitbar(0, 'Starting');
 
-for iSample=1:sampleNumber
+iSample = 1;
+while iSample <= sampleNumber
     waitbar(iSample/sampleNumber, f, sprintf('Progress: %d %%', floor(iSample/sampleNumber*100)));
     
     if strcmp(objectType, 'sphere')
@@ -46,7 +47,12 @@ for iSample=1:sampleNumber
             rand(3,1)+0.3, getRandomQuaternion(), SN});
     end
     
-    [flag, dist, ~, condition] = collision_cfc(s1,s2, 'constrained');
+    try 
+        [flag, dist, ~, condition] = collision_cfc(s1,s2, 'least-squares');
+    catch 
+        iSample = iSample-1;
+        continue;
+    end
     
     % Check cfc condition between s1 and s2, if not converge, then generate
     % new pairs
@@ -106,7 +112,8 @@ for iSample=1:sampleNumber
     
     s1Array(:,iSample) = [s1.a, s1.q, s1.tc', s1.eps];
     s2Array(:,iSample) = [s2.a, s2.q, s2.tc', s2.eps];
-   
+    
+    iSample = iSample + 1;
 end
 close(f)
 

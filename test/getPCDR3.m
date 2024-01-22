@@ -45,11 +45,26 @@ Sigmax = Sigma1 + Sigma2;
 
 switch method
     case 'Exact'
-        [prob, time] = exactProbTranslation(s1, s2, Sigma2, 1e+03);
+        try
+            [prob, time] = exactProbTranslation(s1, s2, Sigma2, 1e+04);
+        catch
+            prob = NaN;
+            time = NaN;
+        end
     case 'Exact_two'
-        [prob, time] = exactProbTranslationTwoErrors(s1, s2, Sigma1, Sigma2, 1e+03);
+        try
+            [prob, time] = exactProbTranslationTwoErrors(s1, s2, Sigma1, Sigma2, 1e+03);
+        catch
+            prob = NaN;
+            time = NaN;
+        end
     case 'Fast_sampling'
-        [prob, time] = fastExactProbTranslationTwoErrors(s1, s2, Sigma1, Sigma2, 1e+03);
+        try
+            [prob, time] = fastExactProbTranslationTwoErrors(s1, s2, Sigma1, Sigma2, 1e+03);
+        catch
+            prob = NaN;
+            time = NaN;
+        end
     case 'Maxpdf'
         try 
             [prob, time] = maxPDFSphere(s1, s2, mx, Sigma2);
@@ -122,14 +137,14 @@ switch method
         end
     case 'LCC_center_point'
         try
-            [prob, time] = linearChanceConstraintBound(s1, s2, mx, Sigmax, 'center-point', false);
+            [prob, time] = linearChanceConstraintSQ(s1, s2, mx, Sigmax, 'center-point', false);
         catch 
             prob = NaN;
             time = NaN;
         end
     case 'LCC_center_point_cfc'
         try
-            [prob, time] = linearChanceConstraintBound(s1, s2, mx, Sigmax, 'center-point-cfc', false);
+            [prob, time] = linearChanceConstraintSQ(s1, s2, mx, Sigmax, 'center-point-cfc', false);
         catch 
             prob = NaN;
             time = NaN;
