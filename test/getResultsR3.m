@@ -65,8 +65,17 @@ while iSample <= sampleNumber
     
     flagArray(iSample) = round(flag);
     distArray(iSample) = dist;
-
+    
+    % The mean of the relative position error
     mx = s2.tc-s1.tc;
+    
+    % Now transform the position error covariance matrix from the
+    % body-fixed frame to the world frame
+    R1 = quat2rotm(s1.q);
+    R2 = quat2rotm(s2.q);
+    % ellipsoid: x' * inv(Sigma) * x =1 => x' * inv(R*diag^2*R') * x=1
+    Sigma1 = R1 * Sigma1 * R1';
+    Sigma2 = R2 * Sigma2 * R2';
     
     % Check if two objects 
     if all(diag(Sigma1))
