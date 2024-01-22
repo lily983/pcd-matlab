@@ -29,6 +29,8 @@ if ~all(diag(Sigma1))
 else
     % position error ellipsoid
     scale = chi2inv(confidenceLevel, 3);
+    % here error_ellip is assumed to be diagonal matrix defined in the
+    % world space, so it has identity rotation matrix
     error_ellip = SuperQuadrics({(scale.*diag(Sigma1)).^0.5, [1,1], [0,0], [0;0;0], [1,0,0,0], s1.N});
     s1_enlarged = MinkSumClosedForm(s1, error_ellip, quat2rotm(s1.q), quat2rotm(error_ellip.q));
     m1 = s1.GetGradientsCanonical();
