@@ -33,5 +33,8 @@ for i = 1:size(keySet,2)
     visualizeDataFittingResult(currentDataArray, currentDataColor);
 end
 plot(xIndex,0.05*ones(sampleNumber),'--');
+% add 0.05
+ah=gca;
+ah.YTick=sort([ah.YTick, 0.05]);
 hold off;
 end
