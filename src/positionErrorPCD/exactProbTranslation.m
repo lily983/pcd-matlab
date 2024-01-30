@@ -47,8 +47,19 @@ for i=1:N
                 prob = prob+1;
             end
         elseif strcmp(s1objectType, 'superquadrics')==1 && strcmp(s2objectType, 'superquadrics')==1
-            if collision_cfc(s1, s3)
-                prob = prob+1;
+            % Fix point iteration
+            [flag, ~, ~, condition]=collision_cfc(s1, s3);
+            % if condition doesn't satisfied, use constrained optimization
+            % to compute again
+            if isnan(condition) || condition>1e-03
+                [flag, ~, ~, condition]=collision_cfc(s1, s3,'constrained');
+                if ~isnan(condition) && flag
+                    prob = prob+1;
+%                     figure; hold on
+%                     s1.PlotShape('b', 0.7);
+%                     s2.PlotShape('g', 0.7);
+%                     s3.PlotShape('m', 0.7);
+                end
             end
         end
     end
