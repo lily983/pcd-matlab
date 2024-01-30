@@ -6,11 +6,11 @@ end
 switch method
     case 'center-point'
         % Get bounding ellipsoid for each object
-        s1Points = s1.GetPoints();
-        s2Points = s2.GetPoints();
+        s1Points = s1.GetPoints()-s1.tc;
+        s2Points = s2.GetPoints()-s2.tc;
         
-        [invSigma1, ~] = MinVolEllipse(s1Points, 0.001);
-        [invSigma2, ~] = MinVolEllipse(s2Points, 0.001);
+        [invSigma1, c1] = MinVolEllipse(s1Points, 0.001);
+        [invSigma2, c2] = MinVolEllipse(s2Points, 0.001);
         Sigma1 = inv(invSigma1);
         Sigma2 = inv(invSigma2);
         
@@ -24,7 +24,7 @@ switch method
             + (1 + sqrt(trace(Sigma1)/trace(Sigma2))) * Sigma2;
         
         % transformed relative position error
-        xx_T = Sigmaf^0.5 \ xx;
+        xx_T = Sigmaf^0.5 \ (xx+c2-c1);
         Sigmax_T = Sigmaf^0.5 \ Sigmax / Sigmaf^0.5;
         
         % Get normal vector after space transformation
@@ -59,7 +59,10 @@ switch method
                     'OptimalityTolerance', 1e-8);
         
         % Set initial value of optimization
-        psi_0 = [0,0];
+        R1 = quat2rotm(s1.q);
+        s2_tc_in_s1 = R1' * (s2.tc-s1.tc);
+        psi_0 = [atan2( s2_tc_in_s1(3), norm(s2_tc_in_s1(1:2)) ),...
+                    atan2( s2_tc_in_s1(2), s2_tc_in_s1(1) )];
         
         psi_opt = lsqnonlin(@(psi) func_lsq(psi, minkSum, xx_norm), psi_0,...
             [], [], option);
@@ -80,6 +83,53 @@ switch method
         
         % Get probability by lcc equation
         prob = 1/2 + 1/2*erf( (b-a'*xx)/sqrt(2*a'*Sigmax*a));
+        t = toc;
+        return
+    case 'tangent-point-cfc'
+        % Find x_g': intersection point between the exact minksum
+        % boundary and confidence level surface (after space
+        % transformation)
+        tic;
+        prob = 0;
+        
+        % Space transformation so that Sigma_x = eye(3)
+        xx_T = Sigmax^0.5 \ xx;
+
+        % % Given objective, find x_g(gradient, norm) 
+        % Constuct MinkSumClosedForm of s1 and s2
+        minkSum_T = MinkSumClosedForm(s1, s2, Sigmax^0.5 \ quat2rotm(s1.q), Sigmax^0.5 \ quat2rotm(s2.q));
+
+        option = optimoptions('lsqnonlin',...
+                    'Algorithm', 'levenberg-marquardt',...
+                    'display', 'none',...
+                    'FunctionTolerance', 1e-8,...
+                    'OptimalityTolerance', 1e-8);
+        
+        % Set initial value of optimization
+        R1 = quat2rotm(s1.q);
+        s2_tc_in_s1 = R1' * (s2.tc-s1.tc);
+        psi_0 = [atan2( s2_tc_in_s1(3), norm(s2_tc_in_s1(1:2)) ),...
+                    atan2( s2_tc_in_s1(2), s2_tc_in_s1(1) )];
+        
+        psi_opt = lsqnonlin(@(psi) func_lsq_tangent(psi, minkSum_T, xx_T), psi_0,...
+            [], [], option);
+%         Solution gradient in local frame of s1. Notice that gradients
+%         used here are all defined in the body-fixed frame of s1
+        m_opt = s1.GetGradientsFromSpherical(psi_opt);
+        
+        % Get x_mink
+        x_mink_T = minkSum_T.GetMinkSumFromGradient(m_opt);
+        
+        % Get m_opt in current space
+        %Noted that m_opt is defined in s1's body frame
+        m_current = (Sigmax^0.5 \ quat2rotm(s1.q))' \ m_opt; 
+        a_T = m_current ./ norm(m_current);
+        
+        % Get b
+        b_T = x_mink_T' * a_T;
+        
+        % Get probability by lcc equation
+        prob = 1/2 + 1/2*erf( (b_T-a_T'*xx_T)/sqrt(2*a_T'*eye(3)*a_T));
         t = toc;
         return
 end
@@ -103,4 +153,13 @@ m = minkSum.s1.GetGradientsFromSpherical(psi);
 xMink = minkSum.GetMinkSumFromGradient(m);
 
 F = norm(xMink) - xMink' * xx;
+end
+
+% Least squares optimization cost for lcc-tangent
+function F = func_lsq_tangent(psi, minkSum_T, xx_T)
+m = minkSum_T.s1.GetGradientsFromSpherical(psi);
+
+xMink = minkSum_T.GetMinkSumFromGradient(m);
+
+F = 0.5 * sum((xx_T - xMink).^2);
 end
