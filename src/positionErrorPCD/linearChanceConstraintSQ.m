@@ -131,6 +131,9 @@ switch method
         % Get probability by lcc equation
         prob = 1/2 + 1/2*erf( (b_T-a_T'*xx_T)/sqrt(2*a_T'*eye(3)*a_T));
         t = toc;
+        m = quat2rotm(s1.q)' \ m_opt; 
+        a = m ./ norm(m);
+        x_mink = Sigmax^0.5 * x_mink_T;
         return
 end
 
