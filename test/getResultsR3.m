@@ -15,6 +15,20 @@ function results = getResultsR3(sampleNumber, objectType, Sigma1, Sigma2, keySet
 
 f = waitbar(0, 'Starting');
 
+% Check if two objects 
+if all(diag(Sigma1))
+    TwoErrorCase = 1;
+    filePath = [objectType  '-TwoError-'];
+else
+    TwoErrorCase = 0;
+    filePath = [objectType  '-SingleError-'];
+end
+
+%  Create .jason file
+currentDateTime = now;
+formattedDateTime = datestr(currentDateTime, 'yyyy-mm-dd HH:MM:SS');
+filePath = [filePath  formattedDateTime  '.json'];
+
 iSample = 1;
 while iSample <= sampleNumber
     waitbar(iSample/sampleNumber, f, sprintf('Progress: %d %%', floor(iSample/sampleNumber*100)));
@@ -22,28 +36,28 @@ while iSample <= sampleNumber
     if strcmp(objectType, 'sphere')
         SN = [10, 10];
         
-        s1 = SuperQuadrics({(rand(1)+0.1)*ones(1,3), [1,1], [0, 0]...
+        s1 = SuperQuadrics({(rand(1)+0.2)*ones(1,3), [1,1], [0, 0]...
             rand(3,1).*0.1, getRandomQuaternion(), SN});
         
-        s2 = SuperQuadrics({(rand(1)+0.1)*ones(1,3),  [1,1], [0, 0]...
+        s2 = SuperQuadrics({(rand(1)+0.2)*ones(1,3),  [1,1], [0, 0]...
             rand(3,1)+0.3, getRandomQuaternion(),SN});
         
     elseif strcmp(objectType, 'ellipsoid')
         SN = [10, 10];
         
-        s1 = SuperQuadrics({rand(1,3)+0.1, [1,1], [0, 0]...
+        s1 = SuperQuadrics({rand(1,3)+0.2, [1,1], [0, 0]...
             rand(3,1).*0.1, getRandomQuaternion(), SN});
         
-        s2 = SuperQuadrics({rand(1,3)+0.1,  [1,1], [0, 0]...
+        s2 = SuperQuadrics({rand(1,3)+0.2,  [1,1], [0, 0]...
             rand(3,1)+0.3, getRandomQuaternion(), SN});
         
     elseif strcmp(objectType, 'superquadrics')
         SN = [40, 40];
         
-        s1 = SuperQuadrics({rand(1,3)+0.1, 2*rand(1,2), [0, 0]...
+        s1 = SuperQuadrics({rand(1,3)+0.2, 2*rand(1,2), [0, 0]...
             rand(3,1).*0.1, getRandomQuaternion(), SN});
         
-        s2 = SuperQuadrics({rand(1,3)+0.1, 2*rand(1,2), [0, 0]...
+        s2 = SuperQuadrics({rand(1,3)+0.2, 2*rand(1,2), [0, 0]...
             rand(3,1)+0.3, getRandomQuaternion(), SN});
     end
     
@@ -80,12 +94,12 @@ while iSample <= sampleNumber
     Sigma1 = R1 * Sigma1 * R1';
     Sigma2 = R2 * Sigma2 * R2';
     
-    % Check if two objects 
-    if all(diag(Sigma1))
-        TwoErrorCase = 1;
-    else
-        TwoErrorCase = 0;
-    end
+%     % Check if two objects 
+%     if all(diag(Sigma1))
+%         TwoErrorCase = 1;
+%     else
+%         TwoErrorCase = 0;
+%     end
     
     for i = 1:size(keySet,2)
         iMethod = string(keySet(i));
@@ -93,7 +107,7 @@ while iSample <= sampleNumber
 %         if two object collide at mean pose, the following algorithms will
 %         not work
         if flag && any(strcmp(iMethod, {'Maxpdf', 'Maxpdf_SQ', 'LCC_center_point', 'LCC_closed_point', ...
-                'LCC_tangent_point', 'Quadratic_exact', 'Quadratic_bound', 'Divergence_,mesh', 'LCC_center_point_cfc', 'LCC_tangent_point_cfc'}))
+                'LCC_tangent_point', 'Quadratic_exact', 'Quadratic_bound', 'Divergence_mesh', 'LCC_center_point_cfc', 'LCC_tangent_point_cfc'}))
             results.(genvarname(iMethod))(iSample)=1;
             results.(append(iMethod, 'Time'))(iSample)=NaN;
             continue;
@@ -102,7 +116,7 @@ while iSample <= sampleNumber
         % If TwoErrorCase, only get results for following methods
         if TwoErrorCase 
             if any(strcmp(iMethod, {'Fast_sampling', 'Exact_two', 'EB_99', 'EB_95', 'GMF', 'Quadratic_exact', 'Quadratic_bound',...
-                    'LCC_center_point', 'LCC_closed_point', 'LCC_tangent_point', 'LCC_center_point_cfc', 'LCC_tangent_point_cfc'})) 
+                    'LCC_center_point', 'LCC_closed_point', 'LCC_tangent_point', 'LCC_center_point_cfc', 'LCC_tangent_point_cfc', 'Divergence_mesh'})) 
                 [results.(genvarname(iMethod))(iSample), results.(append(iMethod, 'Time'))(iSample)] ...
                     = getPCDR3(s1, s2, mx, Sigma1, Sigma2, iMethod);
             else
@@ -125,9 +139,17 @@ while iSample <= sampleNumber
     s1Array(:,iSample) = [s1.a, s1.q, s1.tc', s1.eps];
     s2Array(:,iSample) = [s2.a, s2.q, s2.tc', s2.eps];
     
+    % Write results
+    jsonData = jsonencode(results);
+    fileID = fopen(filePath, 'w');
+    fprintf(fileID, '%s', jsonData);
+    
     iSample = iSample + 1;
 end
 close(f)
+
+% Close the file
+fclose(fileID);
 
 %sort data by Exact/Exact_two in ascent way and store sorted data in a struct
 %array format

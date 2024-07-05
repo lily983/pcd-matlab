@@ -102,16 +102,16 @@ switch method
         option = optimoptions('lsqnonlin',...
                     'Algorithm', 'levenberg-marquardt',...
                     'display', 'none',...
-                    'FunctionTolerance', 1e-8,...
-                    'OptimalityTolerance', 1e-8);
+                    'FunctionTolerance', 1e-16,...
+                    'OptimalityTolerance', 1e-16);
         
         % Set initial value of optimization
-        R1 = quat2rotm(s1.q);
-        s2_tc_in_s1 = R1' * (s2.tc-s1.tc);
-        psi_0 = [atan2( s2_tc_in_s1(3), norm(s2_tc_in_s1(1:2)) ),...
-                    atan2( s2_tc_in_s1(2), s2_tc_in_s1(1) )];
+        R1_T = Sigmax^0.5 \ quat2rotm(s1.q);
+        s2_tc_in_s1_T = R1_T' * (s2.tc-s1.tc);
+        psi_0_T = [atan2( s2_tc_in_s1_T(3), norm(s2_tc_in_s1_T(1:2)) ),...
+                    atan2( s2_tc_in_s1_T(2), s2_tc_in_s1_T(1) )];
         
-        psi_opt = lsqnonlin(@(psi) func_lsq_tangent(psi, minkSum_T, xx_T), psi_0,...
+        psi_opt = lsqnonlin(@(psi) func_lsq_tangent(psi, minkSum_T, xx_T), psi_0_T,...
             [], [], option);
 %         Solution gradient in local frame of s1. Notice that gradients
 %         used here are all defined in the body-fixed frame of s1
@@ -164,5 +164,9 @@ m = minkSum_T.s1.GetGradientsFromSpherical(psi);
 
 xMink = minkSum_T.GetMinkSumFromGradient(m);
 
-F = 0.5 * sum((xx_T - xMink).^2);
+% F = 0.5 * sum((xx_T - xMink).^2);
+F =xx_T - xMink;
+% psi
+% xx_T
+% F
 end

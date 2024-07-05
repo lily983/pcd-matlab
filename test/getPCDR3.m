@@ -46,21 +46,21 @@ Sigmax = Sigma1 + Sigma2;
 switch method
     case 'Exact'
         try
-            [prob, time] = exactProbTranslation(s1, s2, Sigma2, 1e+03);
+            [prob, time] = exactProbTranslation(s1, s2, Sigma2, 1e+04);
         catch
             prob = NaN;
             time = NaN;
         end
     case 'Exact_two'
         try
-            [prob, time] = exactProbTranslationTwoErrors(s1, s2, Sigma1, Sigma2, 1e+03);
+            [prob, time] = exactProbTranslationTwoErrors(s1, s2, Sigma1, Sigma2, 1e+04);
         catch
             prob = NaN;
             time = NaN;
         end
     case 'Fast_sampling'
         try
-            [prob, time] = fastExactProbTranslationTwoErrors(s1, s2, Sigma1, Sigma2, 1e+03);
+            [prob, time] = fastExactProbTranslationTwoErrors(s1, s2, Sigma1, Sigma2, 1e+04);
         catch
             prob = NaN;
             time = NaN;
