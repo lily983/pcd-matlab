@@ -1,5 +1,5 @@
 function visualize_position_error(s1, s2, Sigma)
-    n = 50;
+    n = 10;
     
     dimension = size(Sigma,1);
     

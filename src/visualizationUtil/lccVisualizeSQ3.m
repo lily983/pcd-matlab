@@ -10,10 +10,10 @@ s1 = SuperEllipse([2, 6, 0.2, 0, -19, -9, -0.5, 100]);
 s2 = SuperEllipse([5, 3, 0.2, 0, -14, 5, -0.0, 100]);
 
 s1_color = hex2rgb('45AC59'); %green
-s1.PlotShape(s1_color, 1, 1);
+s1.PlotShape(s1_color, 1);
 
 s2_color = hex2rgb('4FAAD1'); %blue
-s2.PlotShape(s2_color, 1, 1);
+s2.PlotShape(s2_color, 1);
 
 % Get bounding ellipsoid for s1 and s2
 s1Points = s1.GetPoints();

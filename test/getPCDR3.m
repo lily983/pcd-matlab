@@ -60,7 +60,7 @@ switch method
         end
     case 'Fast_sampling'
         try
-            [prob, time] = fastExactProbTranslationTwoErrors(s1, s2, Sigma1, Sigma2, 1e+04);
+            [prob, time] = fastExactProbTranslationTwoErrors(s1, s2, Sigma1, Sigma2, 1e+06);
         catch
             prob = NaN;
             time = NaN;

@@ -5,15 +5,15 @@ function Sigma = positionErrorDistribution(distribution)
 % end
 
 Sigma = zeros(3);
-Sigma(1,1) = 7.0000e-00;
-Sigma(2,2) = 8.0000e-00;
-Sigma(3,3) = 9.0000e-00;
+Sigma(1,1) = 1.2000e-00;
+Sigma(2,2) = 1.2000e-00;
+Sigma(3,3) = 1.5000e-00;
 
 switch distribution
     case 'small'
         scaleValue = 4e-04;
     case 'large'
-        scaleValue = 6e-03;
+        scaleValue = 8e-04;
     case 'none'
         scaleValue = 0;
 end

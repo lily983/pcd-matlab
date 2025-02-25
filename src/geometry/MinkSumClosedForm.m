@@ -124,5 +124,18 @@ classdef MinkSumClosedForm < handle
             mink = obj.M1 * obj.s1.GetPoints() + Tinv^2 * gradPhi_t ./...
                 sqrt(sum( (obj.M2 \ (Tinv * gradPhi_t)).^2, 1 ));
         end
+        
+        function PlotShape(obj, color, faceAlpha, edgeAlpha)
+            n_1 = obj.s1.GetNormals();
+           
+            x_mink = obj.GetMinkSumFromNormal(n_1);
+            N = obj.s1.N;
+            x = reshape(x_mink(1,:), N(1), N(2));
+            y = reshape(x_mink(2,:), N(1), N(2));
+            z = reshape(x_mink(3,:), N(1), N(2));
+            
+            surf(x, y, z, 'FaceColor', color, 'EdgeColor', color,...
+                'FaceAlpha', faceAlpha, 'EdgeAlpha', edgeAlpha);
+        end
     end
 end

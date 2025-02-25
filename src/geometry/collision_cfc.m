@@ -1,4 +1,4 @@
-function [flag, dist, pt_cls, condition] = collision_cfc(s1, s2, opt)
+function [flag, dist, pt_cls, condition, m_opt] = collision_cfc(s1, s2, opt)
 % collision_cfc computes the separation distance between two bodies, using 
 % the closed-form contact space (CFC) and nonlinear optimization. 
 % The surfaces are parameterized by gradient of s1.

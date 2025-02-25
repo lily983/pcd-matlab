@@ -1,0 +1,89 @@
+classdef EnlargedSuperQuadrics < handle
+    % EnlargedSuperQuadrics class, with different methods of operations
+    %
+    %  Inputs:
+    %    sq: SuperQuadrics
+    %    R: Rotation estimations, 3X3XM
+    %    c: Scaling constant
+    %
+    %  Author:
+    %    Xiaoli Wang
+    
+    properties
+        sq       % class of SuperQuadrics (must be in the identity orientation, no taper, and mean position. q=[1 0 0 0], taper=[0 0]
+        R        % Rotation estimations, 3X3XM
+        c         % Scaling constant
+    end
+    
+    methods
+        %% Constructor
+        function obj = EnlargedSuperQuadrics(sq, R, c)
+            obj.sq = SuperQuadrics({sq.a, sq.eps, sq.taper, sq.tc, sq.q, sq.N});
+            obj.R = R;
+            obj.c = c;
+            
+            obj.sq.q=[1 0 0 0];
+            obj.sq.taper=[0 0];
+        end
+        
+        %% Get surface points from normal
+        function f_n = GetPointsFromNormal(obj, n)
+            % GetPointsFromNormal Get boundary points from outward unit
+            % normals, canonical form
+            %
+            %  Inputs:
+            %    n  : Normals, 3xN vector. Normal of the x_i^{UB}
+            %
+            %  Outputs:
+            %    f_n: Surface point, 3xN vector
+            f_n = zeros(3, size(n,2));
+            for j=1:size(obj.R,3)
+                f_n = f_n + obj.R(:,:,j) * obj.sq.GetPointsFromNormal(obj.R(:,:,j)' * n);
+            end
+            f_n = (obj.c / size(obj.R,3)) * f_n;
+        end
+        
+        %% Get surface points
+        function pnt = GetPoints(obj)
+            % Get surface points in global frame
+            % pnt: 3XN
+            pnt = obj.GetPointsFromNormal(obj.R(:,:,1) * obj.sq.GetNormals());
+            pnt = pnt + obj.sq.tc;
+        end
+        
+        function [x, y, z] = GetSurfPoints(obj)
+            % Get surface points in global frame, in the
+            % structure of mesh grid
+            N = obj.sq.N;
+            
+            pnt = obj.GetPoints();
+            
+            x = reshape(pnt(1,:), N(1), N(2));
+            y = reshape(pnt(2,:), N(1), N(2));
+            z = reshape(pnt(3,:), N(1), N(2));
+        end
+        
+        %% PlotShape
+        function PlotShape(obj, color, faceAlpha, edgeAlpha)
+            % PlotShape Plot the superquadric surface
+            %
+            %  Inputs:
+            %    color    : color of the surface
+            %    faceAlpha: transparency of the surface, range in [0,1]
+            if nargin==3
+                edgeAlpha=1;
+            end
+            
+            [x, y, z] = obj.GetSurfPoints();
+            
+            surf(x, y, z, 'FaceColor', color, 'EdgeColor', color,...
+                'FaceAlpha', faceAlpha, 'EdgeAlpha', edgeAlpha);
+        end
+        
+        %% Get mean orientation 
+        function mu = getMeanOrientation(obj)
+            mu = get_mean_cov(obj.R, 'SO', 0);
+        end
+        
+    end
+end

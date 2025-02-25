@@ -54,10 +54,10 @@ while iSample <= sampleNumber
     elseif strcmp(objectType, 'superquadrics')
         SN = [40, 40];
         
-        s1 = SuperQuadrics({rand(1,3)+0.2, 2*rand(1,2), [0, 0]...
+        s1 = SuperQuadrics({rand(1,3)+0.2, [(rand(1)+0.01)*2, rand(1)*2], [0, 0]...
             rand(3,1).*0.1, getRandomQuaternion(), SN});
         
-        s2 = SuperQuadrics({rand(1,3)+0.2, 2*rand(1,2), [0, 0]...
+        s2 = SuperQuadrics({rand(1,3)+0.2, [(rand(1)+0.01)*2, rand(1)*2], [0, 0]...
             rand(3,1)+0.3, getRandomQuaternion(), SN});
     end
     
@@ -154,11 +154,12 @@ fclose(fileID);
 %sort data by Exact/Exact_two in ascent way and store sorted data in a struct
 %array format
 if TwoErrorCase
-    baselineName = 'Exact_two';
-    [results.Exact_two, index] = sort(results.Exact_two, 2);
+%     baselineName = 'Exact_two';
+    baselineName = 'Fast_sampling';
+    [results.(genvarname(baselineName)), index] = sort(results.(genvarname(baselineName)), 2);
 else
     baselineName = 'Exact';
-    [results.Exact, index] = sort(results.Exact, 2);
+    [results.(genvarname(baselineName)), index] = sort(results.(genvarname(baselineName)), 2);
 end
 
 for i = 1:size(keySet,2)

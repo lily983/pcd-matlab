@@ -1,0 +1,9 @@
+addpath ../src/
+addpath ../src/util/
+addpath ../src/geometry
+addpath ../src/positionErrorPCD
+addpath ../src/poseErrorPCD
+addpath ../src/visualizationUtil
+addpath ../test
+addpath ../primp-matlab/src/util
+addpath util

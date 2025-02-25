@@ -698,17 +698,20 @@ classdef SuperQuadrics < handle
         end
         
         %% Plot superquadric surface
-        function PlotShape(obj, color, faceAlpha)
+        function PlotShape(obj, color, faceAlpha, edgeAlpha)
             % PlotShape Plot the superquadric surface
             %
             %  Inputs:
             %    color    : color of the surface
             %    faceAlpha: transparency of the surface, range in [0,1]
+            if nargin==3
+                edgeAlpha=1;
+            end
             
             [x, y, z] = obj.GetSurfPoints();
             
             surf(x, y, z, 'FaceColor', color, 'EdgeColor', color,...
-                'FaceAlpha', faceAlpha, 'EdgeAlpha', 0.2);
+                'FaceAlpha', faceAlpha, 'EdgeAlpha', edgeAlpha);
         end
         
         %% GetVolume compute volume of superquadrics

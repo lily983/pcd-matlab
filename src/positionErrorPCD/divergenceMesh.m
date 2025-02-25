@@ -14,8 +14,8 @@ if s1.N ~= s2.N
     error("S1 and S2 sampling points (N) are not the same");
 end
 
-tic;
-prob = 0;
+% tic;
+% prob = 0;
 
 % Surface points
 SN = s1.N;
@@ -42,6 +42,10 @@ Z_ = reshape(mink_points(:,3),  SN);
 patch_mink = surf2patch(X_,Y_,Z_, 'triangles');
 %patch(patch_mink, 'FaceAlpha', 0.3)
 
+tic;
+prob = 0;
+
+
 % In this paper, direction vector n_d is the connection between closed
 % points from Sigma^0.5*s2 - Sigma^0.5*s1
 s1_points = (sqrtm(Sigma) \ s1.GetPoints())';
@@ -54,7 +58,7 @@ patch_s2 = surf2patch(reshape(s2_points(:,1), SN), reshape(s2_points(:,2), SN), 
 
 n_d = (G - H)/norm(G-H);
 
-prob = 0;
+% prob = 0;
 
 for i = 1:size(patch_mink.faces,1)
     v1 = mink_points(patch_mink.faces(i,1),:)';

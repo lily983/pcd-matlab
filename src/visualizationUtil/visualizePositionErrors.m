@@ -1,11 +1,21 @@
-function visualizePositionErrors(s1, s2, Sigma1, Sigma2)
-    n = 20;
+function visualizePositionErrors(s1, s2, Cov1, Cov2, color1, color2)
+if nargin == 4
+    color1 = hex2rgb('45AC59');
+    color2= hex2rgb('9fc5e8');
+end
+    n = 7;
     
-    dimension = size(Sigma1,1);
+    dimension = size(Cov1,1);
     
-    x1_rand = mvnrnd(zeros(dimension,1), Sigma1, n);
+    % Transform position error covariance matrix to world space
+    R1 = quat2rotm(s1.q);
+    Cov1 = R1 * Cov1 * R1';
+    R2 = quat2rotm(s2.q);
+    Cov2 = R2 * Cov2 * R2';
     
-    x2_rand = mvnrnd(zeros(dimension,1), Sigma2, n);
+    x1_rand = mvnrnd(zeros(dimension,1), Cov1, n);
+    
+    x2_rand = mvnrnd(zeros(dimension,1), Cov2, n);
     
     if dimension == 2
         s3 = SuperEllipse([s1.a(1), s1.a(2), s1.eps, s1.taper...
@@ -17,16 +27,16 @@ function visualizePositionErrors(s1, s2, Sigma1, Sigma2)
         s4 = SuperQuadrics({s2.a, s2.eps, s2.taper, s2.tc, s2.q, s2.N});
     end
 
-    figure; hold on;axis equal;axis off
-    s3.PlotShape('r', 0.4);
-    s1.PlotShape('b', 0.3);
+%     figure; hold on;axis equal;axis off
+%     s1.PlotShape(color1, 0.6);
+%     s2.PlotShape(color2, 0.8);
 
     for i = 1:size(x1_rand, 1)
         s3.tc = s1.tc + x1_rand(i,:)';
-        s3.PlotShape(hex2rgb('9fc5e8'), 0.1);
+        s3.PlotShape(color1, 0.1, 0.0);
         
         s4.tc = s2.tc + x2_rand(i,:)';
-        s4.PlotShape(hex2rgb('45AC59'), 0.1);
+        s4.PlotShape(color2, 0.1, 0.0);
 %         pause(0.5)
     end
     

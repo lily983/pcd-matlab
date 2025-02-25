@@ -60,7 +60,7 @@ pgon2= polyshape(s2Points(:,1), s2Points(:,2));
 mSum = minkowskiSum(pgon1, pgon2);
 
 patch(mSum.Vertices(:,1), mSum.Vertices(:,2), hex2rgb('45498C'), 'FaceAlpha', 0.0, 'EdgeAlpha', 1);
-s3.PlotShape(hex2rgb('ED5564'), 0.0, 0.8); % brown color
+s3.PlotShape(hex2rgb('ED5564'), 0.0, 0.8); % light red
 % s3_fp.PlotShape(hex2rgb('ED5564'), 0.0, 1);
 
 %%% Put axes center at the origin

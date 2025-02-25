@@ -1,5 +1,5 @@
-function [prob, t, a, x_mink] = linearChanceConstraintSQ(s1, s2, xx, Sigmax, method, isplot)
-if nargin == 4
+function [prob, t, a, x_mink, m_current, x_mink_T] = linearChanceConstraintSQ(s1, s2, xx, Sigmax, method, isplot)
+if nargin == 5
     isplot = false;
 end
 
@@ -84,7 +84,6 @@ switch method
         % Get probability by lcc equation
         prob = 1/2 + 1/2*erf( (b-a'*xx)/sqrt(2*a'*Sigmax*a));
         t = toc;
-        return
     case 'tangent-point-cfc'
         % Find x_g': intersection point between the exact minksum
         % boundary and confidence level surface (after space
@@ -101,7 +100,7 @@ switch method
 
         option = optimoptions('lsqnonlin',...
                     'Algorithm', 'levenberg-marquardt',...
-                    'display', 'none',...
+                    'display', 'iter-detailed',...
                     'FunctionTolerance', 1e-16,...
                     'OptimalityTolerance', 1e-16);
         
@@ -131,10 +130,10 @@ switch method
         % Get probability by lcc equation
         prob = 1/2 + 1/2*erf( (b_T-a_T'*xx_T)/sqrt(2*a_T'*eye(3)*a_T));
         t = toc;
-        m = quat2rotm(s1.q)' \ m_opt; 
+        m = quat2rotm(s1.q) * m_opt; 
         a = m ./ norm(m);
         x_mink = Sigmax^0.5 * x_mink_T;
-        return
+%         return
 end
 
 if isplot
@@ -144,7 +143,8 @@ if isplot
         color = 'm';
     end
 %     visualize_bounding_ellip(s1,s2);
-    plotPlane(a, x_mink+s1.tc, color);
+    color = 'r';
+    plotPlane(a, x_mink, color);
 end
 
 end
@@ -168,5 +168,4 @@ xMink = minkSum_T.GetMinkSumFromGradient(m);
 F =xx_T - xMink;
 % psi
 % xx_T
-% F
 end

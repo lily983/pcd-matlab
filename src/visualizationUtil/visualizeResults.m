@@ -7,7 +7,7 @@ markerAlpha = 0.5;
 markerSize = 30;
 
 figure; hold on;
-ylim([0 1])
+% ylim([0 1])
 xlim([1 sampleNumber])
 
 for i = 1:size(keySet,2)
