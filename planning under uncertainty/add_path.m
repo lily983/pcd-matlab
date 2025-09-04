@@ -1,0 +1,17 @@
+addpath ../src/
+addpath ../src/util/
+addpath ../src/geometry
+addpath ../src/positionErrorPCD
+addpath ../src/poseErrorPCD
+addpath ../src/visualizationUtil
+addpath ../test/Violinplot-Matlab
+addpath YALMIP-master
+addpath YALMIP-master/extras
+addpath YALMIP-master/solvers
+addpath YALMIP-master/modules
+addpath YALMIP-master/modules/parametric
+addpath YALMIP-master/modules/moment
+addpath YALMIP-master/modules/global
+addpath YALMIP-master/modules/sos
+addpath YALMIP-master/operators
+addpath pcd_method/

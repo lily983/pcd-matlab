@@ -8,14 +8,14 @@ T_filter = filterData(T, eye(3));
 R = T_filter(1:3,1:3,:);
 mu = get_mean_cov(R, 'SO', 1);
 
-[mu_t, Sigma_t] = get_mean_cov(T_filter, 'R', 1);
+[mu_t, Sigma_t] = get_mean_cov(T_filter, 'R', 0);
 
 % R = csv2group(samples, 'SO3');
 
 %  R_filter = filterData(R, mu_SO3);
 R_filter = R;
 
-[mu_SO3, Sigma_SO3, ~] = get_mean_cov(R_filter, 'SO', 1);
+[mu_SO3, Sigma_SO3, ~] = get_mean_cov(R_filter, 'SO', 0);
 
 %% Loading obj parameters
 % axes = [0.034,0.021, 0.016];

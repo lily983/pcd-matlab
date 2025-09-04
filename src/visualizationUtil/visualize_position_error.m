@@ -1,5 +1,5 @@
 function visualize_position_error(s1, s2, Sigma)
-    n = 10;
+    n = 40;
     
     dimension = size(Sigma,1);
     
@@ -13,12 +13,12 @@ function visualize_position_error(s1, s2, Sigma)
     end
 
     figure; hold on;axis equal;axis off
-    s3.PlotShape('r', 0.4);
-    s1.PlotShape('b', 0.3);
+    s3.PlotShape('r', 0.4, 0.4);
+    s1.PlotShape('b', 0.3, 0.3);
 
     for i = 1:size(xi_rand, 1)
         s3.tc = s2.tc + xi_rand(i,:)';
-        s3.PlotShape(hex2rgb('45AC59'), 0.1);
+        s3.PlotShape(hex2rgb('45AC59'), 0.2, 0.4);
 %         pause(0.5)
     end
     

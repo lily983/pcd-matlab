@@ -6,7 +6,7 @@ function [prob, time] = fastExactProbTranslationTwoErrors(s1, s2, Sigma1, Sigma2
 tic;
 prob = 0;
 
-dimension = 3;
+dimension = size(s1.a,2);
 
 %Check if s1 and s2 are superquadric 
 s1objectType = getObjectType(s1);

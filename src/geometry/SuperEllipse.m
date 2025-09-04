@@ -238,6 +238,11 @@ classdef SuperEllipse < handle
             m(2,:) = 2/(obj.a(2)*obj.eps) .* eps_fun(u(2,:), 2-obj.eps);
         end
         
+        function m = GetGradientsFromNormal(obj, n)
+            f = eps_fun( (n(1,:) ./ m_a(1)).^2, 1/m_eps ) +...
+                eps_fun( (n(2,:) ./ m_a(2)).^2, 1/m_eps) - 1;
+        end
+        
         %% Get unit hypersphere parameters from gradient
         function u = GetHypersphereFromGradient(obj, m)
             % GetHypersphereFromGradient Get hypersphere parameters from
