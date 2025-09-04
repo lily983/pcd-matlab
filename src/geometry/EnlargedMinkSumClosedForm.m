@@ -4,7 +4,9 @@ classdef EnlargedMinkSumClosedForm < handle
     %
     %  Inputs:
     %    sub1, sub2: EnlargedSuperQuadrics
-    % 
+    %     
+    %  Author:
+    %    Xiaoli Wang
     
     %% Variables
     properties

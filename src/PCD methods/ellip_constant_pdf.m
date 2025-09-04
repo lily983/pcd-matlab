@@ -1,5 +1,5 @@
 function prob=ellip_constant_pdf(s1, s2, mx, Sigmax, methodOptions)
-% First do coordnate transformation to make the bounding ellipsoid as a
+% First do coordinate transformation to make the bounding ellipsoid as a
 % unit ball located at the origin 
 [mf, Sigmaf] = get_bounding_ellip(s1, s2);
 

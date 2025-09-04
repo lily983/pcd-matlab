@@ -8,9 +8,9 @@ sampleNumber = 100;
 % % key is the name of PCD method
 % % value is the color of PCD method
 M = containers.Map('KeyType','char','ValueType','any');
-M('Exact') = hex2rgb('000000'); % black
+% M('Exact') = hex2rgb('000000'); % black
 % M('Exact_two') = hex2rgb('000000'); % black 
-% M('Fast_sampling') = hex2rgb('f59494') ;% pink
+M('Fast_sampling') = hex2rgb('f59494') ;% pink
 % M('Fast_sampling') = hex2rgb('000000') ;% pink
 M('Divergence_mesh') = hex2rgb('45AC59'); % dark green
 % M('Maxpdf_SQ') = hex2rgb('f58612'); % origin
@@ -34,7 +34,7 @@ M('LCC_tangent_point_cfc') = hex2rgb('ff0010'); % red
 % distribution = 'small';
 distribution = 'large';
 % distribution = 'none';
-Sigma1 = positionErrorDistribution('none');
+Sigma1 = positionErrorDistribution('large');
 Sigma2 = positionErrorDistribution('large');
 
 TwoErrorCase = 0;

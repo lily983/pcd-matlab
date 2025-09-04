@@ -6,8 +6,8 @@ figure; hold on;
 s1 = SuperEllipse([4, 4, 1, 0, 1, 6, 0.3, 25]);
 s2 = SuperEllipse([5,5, 1, 0, 12, 5, 1.4, 25]);
 
-s1.PlotShape(hex2rgb('4FAAD1'), 0.7);
-s2.PlotShape(hex2rgb('45AC59'), 1);
+% s1.PlotShape(hex2rgb('4FAAD1'), 0.7);
+% s2.PlotShape(hex2rgb('45AC59'), 1);
 
 Sigma = eye(2, 2) * 8*1e-02;
 % visualize_position_error(s1, s2, Sigma)
