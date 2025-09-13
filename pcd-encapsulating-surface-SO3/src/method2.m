@@ -1,4 +1,4 @@
-function x_new = idea2(obj, R)
+function x_new = method2(obj, R)
 %idea: 1, 2, 3, 4
 % obj: superquadric
 % R: rotation samples 3x3xN
@@ -12,9 +12,13 @@ u = obj.GetHypersphereFromGradient(m);
 
 A = diag(obj.a);
 
+sum_RA = zeros(3);
+
 for i = 1:size(R,3)
-    x_new =  x_new + R(:,:,i) * A * R(:,:,1)' * u;
+    sum_RA = sum_RA + R(:,:,i) * A R(:,:,i)';
 end
+
+x_new = sum_RA * u;
 
 x_new = x_new ./ size(R,3);
     

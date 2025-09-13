@@ -6,4 +6,4 @@ addpath ../src/poseErrorPCD
 addpath ../src/visualizationUtil
 addpath ../test
 addpath ../primp-matlab/src/util
-addpath util
+addpath utils
