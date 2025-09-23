@@ -1,5 +1,4 @@
-function x_new = method9(obj, R)
-%idea: 1, 2, 3, 4
+function x_new = method9(obj, R, k)
 % obj: superquadric
 % R: rotation samples 3x3xN
 % x_new: new encapsulating surface points 3 x m
@@ -12,5 +11,5 @@ for i = 1:size(R,3)
 x_new = x_new + R(:,:,i) * obj.GetPointsFromNormal(R(:,:,i) *n);
 end
 
-x_new = x_new  ./ scale;
+x_new = k * x_new  ./ size(R,3);
 end

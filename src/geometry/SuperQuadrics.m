@@ -304,7 +304,7 @@ classdef SuperQuadrics < handle
             
             m = obj.GetGradientsCanonical();
             x = obj.GetPointsFromGradient(m);
-            m_t = quat2rotm(obj.q) * obj.TaperGradient(m, x);
+            m_t = obj.TaperGradient(m, x);
         end
         
         function m = GetGradientsCanonical(obj)

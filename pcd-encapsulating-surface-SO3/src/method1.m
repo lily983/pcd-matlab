@@ -1,5 +1,5 @@
-function x_new = method1(obj, R)
-%idea: 1, 2, 3, 4
+function x_new = method1(obj, R, k)
+%%%%Ellipsoid only%%%%
 % obj: superquadric
 % R: rotation samples 3x3xN
 % x_new: new encapsulating surface points 3 x m
@@ -20,6 +20,6 @@ end
 
 x_new = sum_RA * u;
 
-x_new = x_new ./ size(R,3);
+x_new = k * x_new ./ size(R,3);
     
 end

@@ -1,5 +1,5 @@
-function x_new = method3(obj, R)
-%idea: 1, 2, 3, 4
+function x_new = method3(obj, R, k)
+%%%%Ellipsoid only%%%%
 % obj: superquadric
 % R: rotation samples 3x3xN
 % x_new: new encapsulating surface points 3 x m
@@ -12,12 +12,14 @@ u = obj.GetHypersphereFromGradient(m);
 
 A = diag(obj.a);
 
+sum_RA = zeros(3,3);
+
 for i = 1:size(R,3)
-    sum_RA = sum_RA + R(:,:,i)' * A R(:,:,i);
+    sum_RA = sum_RA + R(:,:,i)' * A * R(:,:,i);
 end
 
 x_new = sum_RA * u;
 
-x_new = x_new ./ size(R,3);
+x_new = k * x_new ./ size(R,3);
     
 end

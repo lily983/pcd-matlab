@@ -1,5 +1,5 @@
-function x_new = method4(obj, R)
-%idea: 1, 2, 3, 4
+function x_new = method4(obj, R, k)
+%%%%Ellipsoid only%%%%
 % obj: superquadric
 % R: rotation samples 3x3xN
 % x_new: new encapsulating surface points 3 x m
@@ -13,6 +13,6 @@ for i = 1:size(R,3)
     x_new =  x_new + (R(:,:,i) * A^2 * n)./ vecnorm(A * n) ;
 end
 
-x_new = x_new ./ size(R,3);
+x_new = k * x_new ./ size(R,3);
 
 end
