@@ -66,9 +66,9 @@ tangent_plane_color = hex2rgb('6699cc'); %baby blue
 % Visualize superquadrics
 figure; hold on
 
-s1.PlotShape(s1_color, 0.3);
+s1.PlotShape(s1_color, 0.3,0.2);
 
-s2.PlotShape(s2_color, 0.3);
+s2.PlotShape(s2_color, 0.3,0.2);
 
 ax = gca; % Get current axes
 ax.XAxisLocation = 'origin';
