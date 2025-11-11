@@ -1,4 +1,16 @@
-function prob=ellip_constant_pdf(s1, s2, mx, Sigmax, methodOptions)
+function prob=ellipConstPdf(s1, s2, mx, Sigmax, methodOptions)
+% ellipConstPdf: revised implementation of paper "Efficient Probabilistic
+% Collision Detection for Non-Convex Shapes". The original paper is only
+% for two spherical objects, here we extend to ellipsoidal objects
+%
+%Inputs
+%   s1, s2: Two 
+%   xx: Mean of the relative position error x = x2-x1 
+%   Sigmax: Covariance of the relative position error
+%Outputs
+%   prob: The probability approximation
+%   time: computation time
+
 % First do coordinate transformation to make the bounding ellipsoid as a
 % unit ball located at the origin 
 [mf, Sigmaf] = get_bounding_ellip(s1, s2);

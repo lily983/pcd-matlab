@@ -8,38 +8,7 @@ function [prob, time] = divergenceMesh(s1, s2, xx, Sigmax)
 %   Sigmax: Covariance of the relative position error
 %Outputs
 %   prob: The probability approximation
-%   time: computation time\
-
-% % Check surface sampling points
-% if s1.N ~= s2.N
-%     prob = NaN;
-%     error("S1 and S2 sampling points (N) are not the same");
-% end
-% 
-% % Surface points
-% SN = s1.N;
-% 
-% m1 = s1.GetGradientsCanonical();
-% mink = MinkSumClosedForm(s1,s2,quat2rotm(s1.q),quat2rotm(s2.q));
-% % S1 and S2 are subjected position errors x1~N(m1, Sigma1) and x2~N(m2,
-% % Sigma2). Here S1 and S2 are assumed to center at origin
-% x_mink = mink.GetMinkSumFromGradient(m1);
-% 
-% % Scale and shift all points by 'sqrtm(Sigma) \ (x-mx)' so that position
-% %error center at origin and Sigma is eye(3), a unit ball
-% mink_points = (sqrtm(Sigmax)\x_mink)';
-% shift = sqrtm(Sigmax) \ xx;
-% 
-% mink_points(:,1) = mink_points(:,1) - shift(1,1);
-% mink_points(:,2) = mink_points(:,2) - shift(2,1);
-% mink_points(:,3) = mink_points(:,3) - shift(3,1);
-% 
-% X_ = reshape(mink_points(:,1), SN); 
-% Y_= reshape(mink_points(:,2),  SN); 
-% Z_ = reshape(mink_points(:,3),  SN); 
-
-% patch_mink = surf2patch(X_,Y_,Z_, 'triangles');
-%patch(patch_mink, 'FaceAlpha', 0.3)
+%   time: computation time
 
 % The paper supports mesh objects, here we first convert superquadrics to
 % mesh 
@@ -50,7 +19,7 @@ s2_points = (sqrtm(Sigmax) \ s2.GetPoints())';
 patch_s1 = surf2patch(reshape(s1_points(:,1), s1.N), reshape(s1_points(:,2), s1.N), reshape(s1_points(:,3), s1.N), 'triangles');
 patch_s2 = surf2patch(reshape(s2_points(:,1), s2.N), reshape(s2_points(:,2), s2.N), reshape(s2_points(:,3), s2.N), 'triangles');
 
-% All pairwise sums (N*M x 3)
+% Because surface points of s1 and s2 may not be the same, here we use all pairwise sums (s1.N*s2.N x 3)
 [I,J] = ndgrid(1:size(s1_points,1), 1:size(s2_points,1));
 mink_points=s1_points(I(:),:) - s2_points(J(:),:);
 
