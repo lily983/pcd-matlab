@@ -47,21 +47,22 @@ s1_points = (sqrtm(Sigmax) \ s1.GetPoints())';
 s2_points = (sqrtm(Sigmax) \ s2.GetPoints())';
 
 % Get the mesh of superquadrics S1 and S2
-patch_s1 = surf2patch(reshape(s1_points(:,1), SN), reshape(s1_points(:,2), SN), reshape(s1_points(:,3), SN), 'triangles');
-patch_s2 = surf2patch(reshape(s2_points(:,1), SN), reshape(s2_points(:,2), SN), reshape(s2_points(:,3), SN), 'triangles');
+patch_s1 = surf2patch(reshape(s1_points(:,1), s1.N), reshape(s1_points(:,2), s1.N), reshape(s1_points(:,3), s1.N), 'triangles');
+patch_s2 = surf2patch(reshape(s2_points(:,1), s2.N), reshape(s2_points(:,2), s2.N), reshape(s2_points(:,3), s2.N), 'triangles');
 
-% Get the Minkowski sum S1 + (-S2) after normalize the convariance of the
-% position error and then shifts the Minkowski sum to the origin
-mink_points = s1_points - s2_points - (sqrtm(Sigmax) \ xx);
+% All pairwise sums (N*M x 3)
+[I,J] = ndgrid(1:size(s1_points,1), 1:size(s2_points,1));
+mink_points=s1_points(I(:),:) - s2_points(J(:),:);
 
-% Reshape Minkowski sum points and make a patch for it
-mink_points_number = size(mink_points,1);
-X_ = reshape(mink_points(:,1), mink_points_number); 
-Y_= reshape(mink_points(:,2),  mink_points_number); 
-Z_ = reshape(mink_points(:,3),  mink_points_number); 
+% Surface of Minkowski sum is the convex hull in 3D
+K = convhulln(mink_points);
 
-patch_mink = surf2patch(X_,Y_,Z_, 'triangles');
+patch_mink = struct('Faces', K, 'Vertices', mink_points);
 
+% Shifts the Minkowski sum to the origin
+patch_mink.Vertices = patch_mink.Vertices - (sqrtm(Sigmax) \ xx)'; 
+
+% Start record algorithm running time
 tic;
 prob = 0;
 
@@ -71,12 +72,10 @@ prob = 0;
 
 n_d = (G - H)/norm(G-H);
 
-% prob = 0;
-
-for i = 1:size(patch_mink.faces,1)
-    v1 = mink_points(patch_mink.faces(i,1),:)';
-    v2 = mink_points(patch_mink.faces(i,2),:)';
-    v3 = mink_points(patch_mink.faces(i,3),:)';
+for i = 1:size(patch_mink.Faces,1)
+    v1 = mink_points(patch_mink.Faces(i,1),:)';
+    v2 = mink_points(patch_mink.Faces(i,2),:)';
+    v3 = mink_points(patch_mink.Faces(i,3),:)';
     
     m = -cross(v1-v2, v1-v3);
     n = m/norm(m);
@@ -88,7 +87,6 @@ for i = 1:size(patch_mink.faces,1)
     F_array(2) = dot(F(v2,n_d),n);
     F_array(3) = dot(F(v3,n_d),n);
     if isnan(max(F_array)*area)
-        
         continue
     end
     prob = prob + max(F_array)*area;

@@ -1,7 +1,7 @@
 clc; clear; close all;
 add_path()
 
-sampleNumber = 100;
+sampleNumber = 1;
 
 %%
 % % Mute key-value pair if don't want to test any method
