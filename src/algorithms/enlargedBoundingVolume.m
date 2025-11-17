@@ -1,6 +1,6 @@
-function [prob, time] = enlargedBoundingVolume(s1, s2, Sigma1, Sigma2, confidenceLevel, isPlot)
+function [prob, time] = enlargedBoundingVolume(s1, s2, Sigma1, Sigma2, confidenceLevel)
 % enlargedBoundingVolume: Enlarge the object s1 and s2 by the 
-% uncertainty ellipsoid constructed by Sigma1 and Sigma2 and
+% uncertainty ellipsoids, which are constructed by Sigma1 and Sigma2 and
 % confidenceLevel (1-epsilon, e.g. 99%confidenceLevel->epsilon=0.01)
 % This function is the implementation of paper "Fast Certification of
 % Collision Probability Bounds with Uncertain Convex Obstacles"
@@ -8,17 +8,14 @@ function [prob, time] = enlargedBoundingVolume(s1, s2, Sigma1, Sigma2, confidenc
 % this function, we use Eq. 7 in the paper to construct two enlarged
 % objects based on their covariance matrix and confidenceLevel. Then, use
 % GJK to check if they collide.
-    % Inputs:
-        % s1, s2: sphere or ellipsoid or superquadraics
-        % Sigma1: covariance matrix of position error distribution of s1
-        % Sigma2: covariance matrix of position error distribution of s2
-        % confidenceLevel: 1-epsilon
-    % Outputs:
-        % prob: PCD value
-        % t: computation time
-if nargin == 5
-    isPlot = false;
-end
+% Inputs:
+% s1, s2: sphere or ellipsoid or superquadraics
+% Sigma1: covariance matrix of position error distribution of s1
+% Sigma2: covariance matrix of position error distribution of s2
+% confidenceLevel: 1-epsilon
+% Outputs:
+% prob: PCD value
+% time: computation time
 
 prob = 0;
 tic;
@@ -58,21 +55,4 @@ s2_enlarged_patch = surf2patch(reshape(s2_enlarged_points(1,:),...
 
 prob = GJK(s1_enlarged_patch, s2_enlarged_patch, 1000);
 time = toc;
-
-if isPlot
-%     visualize_bounding_ellip(s1, s2);
-    % 
-    s1_enlarged_patch.FaceColor = 'y';
-    s1_enlarged_patch.FaceAlpha = 0.5;
-    patch(s1_enlarged_patch);
-    % 
-    s2_enlarged_patch.FaceColor = 'm';
-    s2_enlarged_patch.FaceAlpha = 0.5;
-    patch(s2_enlarged_patch);
-    % % 
-%     visualize_bounding_ellip(s1, s2);
-%     error_ellip2.tc = s2.tc;
-%     error_ellip.PlotShape('y', 0.5);
-%     error_ellip2.PlotShape('m', 0.5);
-end
 end
