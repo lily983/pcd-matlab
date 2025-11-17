@@ -1,4 +1,25 @@
-function [prob, t, a, x_mink, m_current, x_mink_T] = linearChanceConstraintSQ(s1, s2, xx, Sigmax, method, isplot)
+function [prob, time] = SQLinearChanceConstraint(s1, s2, xx, Sigmax, method, isplot)
+% linearChanceConstraintSQ: This function is modified for two superquadrics based on methods using linear chance constraint (LCC)
+% to get PCD value for Gaussian distributed variable. The code is inspired
+% based on papers "Chance-Constrained Collision Avoidance for MAVs in
+% Dynamic Environments" and "Tight Collision Probability for UAV Motion
+% Planning in Uncertain Environment" 
+% We first proposed to use LCC on superquadraics (SQ) and to use three ways
+% to get direction vector n and distance b
+% Inputs:
+% s1, s2: sphere or ellipsoid or superquadraics
+% Sigma: covariance matrix of position error distribution
+% method: ways to get direction vector n and distance b.
+    % 'center-point': vector connecting centers of s1, s2. s2.tc - s1.tc;
+    % using a bounding ellipsoid to approximate the Minkowski sum region
+    % center-point-cfc': vector connecting centers of s1, s2. s2.tc - s1.tc;
+    % using the parameterized Minkowski sum surface
+    % 'tangent-point-cfc': closed point from position error center(s2.tc-s1.tc) to transformed
+    % minkowski sum surface(transform space so that Sigma is eye(3))
+% Outputs:
+% prob: PCD value
+% time: computation time
+
 if nargin == 5
     isplot = false;
 end
@@ -34,7 +55,7 @@ switch method
         
         % Get probability by lcc equation
         prob = 1/2 + 1/2*erf( (b-a'*xx_T)/sqrt(2*a'*Sigmax_T*a));
-        t = toc;
+        time = toc;
         
         % Get norm vector, x_mink in the untransformed space
         a = (Sigmaf \ xx) ./ norm(Sigmaf \ xx);
@@ -83,7 +104,7 @@ switch method
         
         % Get probability by lcc equation
         prob = 1/2 + 1/2*erf( (b-a'*xx)/sqrt(2*a'*Sigmax*a));
-        t = toc;
+        time = toc;
     case 'tangent-point-cfc'
         % Find x_g': intersection point between the exact minksum
         % boundary and confidence level surface (after space
@@ -129,7 +150,7 @@ switch method
         
         % Get probability by lcc equation
         prob = 1/2 + 1/2*erf( (b_T-a_T'*xx_T)/sqrt(2*a_T'*eye(3)*a_T));
-        t = toc;
+        time = toc;
         m = quat2rotm(s1.q) * m_opt; 
         a = m ./ norm(m);
         x_mink = Sigmax^0.5 * x_mink_T;
