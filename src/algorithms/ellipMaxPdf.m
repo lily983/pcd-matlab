@@ -1,6 +1,7 @@
 function [prob,time]=ellipMaxPdf(e1, e2, xx, Sigmax)
-%ellipMaxPdf: revised implementation of paper "Efficient Probabilistic
-% Collision Detection for Non-Convex Shapes". The original paper is only 
+%ellipMaxPdf: revised implementation of paper Fast and Bounded Probabilistic
+% Collision Detection for High-DOF Trajectory Planning in Dynamic
+% Environments" The original paper is only  
 % for two spherical objects, here we extend to ellipsoidal objects
 %
 %Inputs
@@ -10,6 +11,13 @@ function [prob,time]=ellipMaxPdf(e1, e2, xx, Sigmax)
 %Outputs
 %   prob: The probability approximation
 %   time: computation time
+
+%Check if e1 and e1 are ellipsoids 
+e1objectType = getObjectType(e1);
+e2objectType = getObjectType(e2);
+ if strcmp(e1objectType, 'ellip')==0 && strcmp(e2objectType, 'ellip')==0
+    error('Input objects are not sphere, unable to use Maxpdf');
+ end
 
 % Start record algorithm running time
 tic;
@@ -25,15 +33,11 @@ prob = 0;
 new_xx = (sqrtm(Sigmaf)) \ xx;
 new_Sigmax =  (sqrtm(Sigmaf)) \  Sigmax / sqrtm(Sigmaf);
 
-
-% Inputs: new_xx (n×1), new_Sigmax (n×n, symmetric positive definite)
-W = inv(new_Sigmax);
-
 % Find the surface point on the boundary of the bounding ellipsoid, which has 
 %the maximum pdf value. 
 % Noted that here the bounding ellipsoid is transformed to be an sphere,
 %so we need to normalize the point
-cost_y = @(y) (y/norm(y) - new_xx).' * W * (y/norm(y) - new_xx);
+cost_y = @(y) (y/norm(y) - new_xx).'/ new_Sigmax * (y/norm(y) - new_xx);
 
 % Initial value
 y0 = new_xx;

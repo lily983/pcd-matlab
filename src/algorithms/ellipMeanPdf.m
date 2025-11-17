@@ -11,6 +11,13 @@ function [prob, time]=ellipMeanPdf(e1, e2, xx, Sigmax)
 %   prob: The probability approximation
 %   time: computation time
 
+%Check if e1 and e1 are ellipsoids 
+e1objectType = getObjectType(e1);
+e2objectType = getObjectType(e2);
+ if strcmp(e1objectType, 'ellip')==0 && strcmp(e2objectType, 'ellip')==0
+    error('Input objects are not sphere, unable to use Maxpdf');
+ end
+
 % Start record algorithm running time
 tic;
 prob = 0;

@@ -16,7 +16,7 @@ end
 
 if isequal(obj.eps, ones(1, dimension-1)) 
     objectType='ellip';
-    if isequal(obj.a./obj.a(1), ones(1,dimension))
+    if isequal(obj.a./obj.a(1), ones(dimension,1))
         objectType='sphere';
     end
 else 
