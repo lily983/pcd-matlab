@@ -87,11 +87,16 @@ elseif dimension == 3
             % faster but often justify two seperated objects as collide, so
             % we use least-squares to double check if the two objects
             % collide or not
-            if collision_cfc(s1, s4)
-                if collision_cfc(s1, s4, 'least-squares')
-                     prob = prob+1;
+            % Fix point iteration
+                [~, ~, ~, condition]=collision_cfc(s3, s4);
+                % if condition doesn't satisfied, use constrained optimization
+                % to compute again
+                if isnan(condition) || condition>1e-03
+                    [flag, ~, ~, condition]=collision_cfc(s3, s4,'least-squared');
+                    if ~isnan(condition) && flag
+                        prob = prob+1;
+                    end
                 end
-            end
          end
     end
 end
